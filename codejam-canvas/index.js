@@ -26,6 +26,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
         draw_image = function(img) {
             error_element.classList.remove('mdc-snackbar--open');
+            this.element.width  = this.base_size;
+            this.element.height = this.base_size;
             this.canvas_ctx.drawImage(img, 0, 0, this.base_size, this.base_size);
         };
 
@@ -36,15 +38,19 @@ window.addEventListener('DOMContentLoaded', () => {
             if (!data) {
                 fetch(source.value, {cache: 'force-cache'}).then(res => res.json()).then(data =>
                     data.map(row =>
-                        row.map(fill_color =>
-                            Array.isArray(fill_color)
-                            ? `rgba(${ fill_color.join(',') })`
-                            : '#' + fill_color,
-                        ),
+                        row.map(fill_color => {
+                            if (Array.isArray(fill_color)) {
+                                let opacity_param = fill_color.pop();
+                                opacity_param = parseFloat((opacity_param / 255).toFixed(2));
+                                fill_color.push(opacity_param);
+                                fill_color = `rgba(${ fill_color.join(',') })`;
+                            }
+                            else fill_color = '#' + fill_color;
+                            return fill_color;
+                        })
                     ),
                 ).then(data => {
                     self.datasets[source.value] = data;
-                    console.log({data});
                     self.draw_data(data);
                 }).catch(error => show_error(error));
             } else self.draw_data(data);

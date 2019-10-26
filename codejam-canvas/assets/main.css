@@ -64,6 +64,9 @@ main>* {
 
 #stage #codejam-canvas {
     border: 1px solid var(--mdc-theme-secondary);
+    width: 512px;
+    height: 512px;
+    image-rendering: pixelated;
 }
 
 .mdc-snackbar__label {
