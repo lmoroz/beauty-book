@@ -41,7 +41,7 @@ main>* {
 
 
 #menu #action-menu, #menu #color-menu {
-    max-width: 250px;
+    max-width: 228px;
     margin-bottom: 75px;
 }
 
@@ -66,4 +66,24 @@ main>* {
 
 .mdc-snackbar__label {
     color: lightsalmon;
+}
+
+.demo-icon
+{
+    font-family: "fontello";
+    font-style: normal;
+    font-weight: normal;
+    speak: none;
+    color: rgba(0, 0, 0, 0.5413);
+    display: inline-block;
+    text-decoration: inherit;
+    width: 1em;
+    margin-right: .2em;
+    text-align: center;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1em;
+    margin-left: .2em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
