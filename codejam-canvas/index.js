@@ -9,18 +9,18 @@ window.addEventListener('DOMContentLoaded', () => {
             this.datasets = {};
             this.element = document.querySelector(selector);
             this.canvas_ctx = this.element.getContext('2d');
-            let self = this;
         }
 
         draw_data = function(data) {
             const cell_size = this.base_size / data.length;
+            const self = this;
             data.forEach((row, r_i) =>
                 row.forEach((fill_color, c_i) => {
                     const [cell_row_start, cell_col_start] = [cell_size * r_i, cell_size * c_i];
-                    this.canvas_ctx.fillStyle = Array.isArray(fill_color)
+                    self.canvas_ctx.fillStyle = Array.isArray(fill_color)
                                                 ? `rgba(${ fill_color.join(',') })`
                                                 : '#' + fill_color;
-                    this.canvas_ctx.fillRect(cell_row_start, cell_col_start, cell_size, cell_size);
+                    self.canvas_ctx.fillRect(cell_row_start, cell_col_start, cell_size, cell_size);
                 }),
             );
         };
