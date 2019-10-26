@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -12,12 +13,13 @@
   <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
 </head>
 <body class="mdc-typography">
-<header class="mdc-top-app-bar mdc-top-app-bar--dense">
+<header class="header mdc-top-app-bar mdc-top-app-bar--dense">
   <div class="mdc-top-app-bar__row">
     <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
       <button class="material-icons mdc-top-app-bar__navigation-icon mdc-icon-button">menu</button>
-      <span class="mdc-top-app-bar__title">CodeJam - Pallete</span>
+      <h2 class="mdc-top-app-bar__title">CodeJam - Pallete</h2>
       <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-end">
+        <h3 class="header__header-hidden">More</h3>
         <button class="material-icons mdc-top-app-bar__navigation-icon mdc-icon-button">more_vert</button>
       </section>
     </section>
@@ -25,23 +27,24 @@
 </header>
 <main>
   <section id="menu">
+    <h2 class="menu__header-hidden">Paint menu</h2>
     <div class="mdc-card mdc-elevation--z3" id="action-menu">
       <ul class="mdc-list" role="menu" aria-hidden="true" aria-orientation="vertical" tabindex="-1">
         <li class="mdc-list-item" role="menuitem">
-          <span class="mdc-list-item__graphic icons" aria-hidden="true"><i class="demo-icon icon-icon-paint-bucket">&#xe802;</i></span>
+          <span class="mdc-list-item__graphic icons" aria-hidden="true"><i class="demo-icon icon-icon-paint-bucket"></i></span>
           <span class="mdc-list-item__text">Paint bucket</span>
         </li>
         <li class="mdc-list-item" role="menuitem">
-          <span class="mdc-list-item__graphic icons" aria-hidden="true"><i class="demo-icon icon-icon-choose-color">&#xe800;</i></span>
+          <span class="mdc-list-item__graphic icons" aria-hidden="true"><i class="demo-icon icon-icon-choose-color"></i></span>
           <span class="mdc-list-item__text">Choose color</span>
         </li>
         <li class="mdc-list-divider" role="separator"></li>
         <li class="mdc-list-item" role="menuitem">
-          <span class="mdc-list-item__graphic icons" aria-hidden="true"><i class="demo-icon icon-icon-move">&#xe801;</i></span>
+          <span class="mdc-list-item__graphic icons" aria-hidden="true"><i class="demo-icon icon-icon-move"></i></span>
           <span class="mdc-list-item__text">Move</span>
         </li>
         <li class="mdc-list-item" role="menuitem">
-          <span class="mdc-list-item__graphic icons" aria-hidden="true"><i class="demo-icon icon-icon-transform">&#xe803;</i></span>
+          <span class="mdc-list-item__graphic icons" aria-hidden="true"><i class="demo-icon icon-icon-transform"></i></span>
           <span class="mdc-list-item__text">Transform</span>
         </li>
       </ul>
@@ -68,9 +71,10 @@
       </ul>
     </div>
   </section>
-  <section id="stage">
-    <div class="mdc-card mdc-elevation--z3" id="switch-menu">
+  <section id="stage" class="stage">
+    <h2 class="stage__header-hidden">Stage</h2>
 
+    <div class="mdc-card mdc-elevation--z3" id="switch-menu">
       <div class="mdc-card__actions">
         <div class="mdc-radio">
           <input class="mdc-radio__native-control" type="radio" id="radio-1" name="radios" data-type="json" value="./data/4x4.json">
