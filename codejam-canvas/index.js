@@ -12,6 +12,7 @@ window.addEventListener('DOMContentLoaded', () => {
         }
 
         draw_data = function(data) {
+            error_element.classList.remove('mdc-snackbar--open')
             const cell_size = this.base_size / data.length;
             const self = this;
             data.forEach((row, r_i) =>
@@ -26,6 +27,7 @@ window.addEventListener('DOMContentLoaded', () => {
         };
 
         draw_image = function(img) {
+            error_element.classList.remove('mdc-snackbar--open')
             this.canvas_ctx.drawImage(img, 0, 0, this.base_size, this.base_size);
         };
 
@@ -62,7 +64,6 @@ window.addEventListener('DOMContentLoaded', () => {
     const show_error = (message = false) => {
         if (message) console.error(message);
         error_element.classList.add('mdc-snackbar--open');
-        window.setTimeout(() => error_element.classList.remove('mdc-snackbar--open'), 5000);
     };
 
     document.getElementById('switch-menu').addEventListener('change', function(event) {
