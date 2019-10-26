@@ -1,0 +1,102 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Codejam Canvas</title>
+  <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="assets/main.css">
+  <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+</head>
+<body class="mdc-typography">
+<header class="mdc-top-app-bar mdc-top-app-bar--dense">
+  <div class="mdc-top-app-bar__row">
+    <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
+      <button class="material-icons mdc-top-app-bar__navigation-icon mdc-icon-button">menu</button>
+      <span class="mdc-top-app-bar__title">CodeJam - Pallete</span>
+      <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-end">
+        <button class="material-icons mdc-top-app-bar__navigation-icon mdc-icon-button">more_vert</button>
+      </section>
+    </section>
+  </div>
+</header>
+<main>
+  <section id="menu">
+    <div class="mdc-card mdc-elevation--z3" id="action-menu">
+      <ul class="mdc-list" role="menu" aria-hidden="true" aria-orientation="vertical" tabindex="-1">
+        <li class="mdc-list-item mdc-ripple-upgraded" role="menuitem">
+          <span class="mdc-list-item__graphic material-icons" aria-hidden="true">wifi</span>
+          <span class="mdc-list-item__text">Paint bucket</span>
+        </li>
+        <li class="mdc-list-item mdc-ripple-upgraded" role="menuitem">
+          <span class="mdc-list-item__graphic material-icons" aria-hidden="true">wifi</span>
+          <span class="mdc-list-item__text">Choose color</span>
+        </li>
+        <li class="mdc-list-divider" role="separator"></li>
+        <li class="mdc-list-item mdc-ripple-upgraded" role="menuitem">
+          <span class="mdc-list-item__graphic material-icons" aria-hidden="true">wifi</span>
+          <span class="mdc-list-item__text">Move</span>
+        </li>
+        <li class="mdc-list-item mdc-ripple-upgraded" role="menuitem">
+          <span class="mdc-list-item__graphic material-icons" aria-hidden="true">wifi</span>
+          <span class="mdc-list-item__text">Transform</span>
+        </li>
+      </ul>
+    </div>
+    <div class="mdc-card mdc-elevation--z3" id="color-menu">
+      <ul class="mdc-list" role="menu" aria-hidden="true" aria-orientation="vertical" tabindex="-1">
+        <li class="mdc-list-item" role="menuitem">
+          <span class="mdc-list-item__text">Current color</span>
+        </li>
+        <li class="mdc-list-item" role="menuitem">
+          <span class="mdc-list-item__text">Prev color</span>
+        </li>
+        <li class="mdc-list-divider" role="separator"></li>
+        <li class="mdc-list-item" role="menuitem">
+          <span class="mdc-list-item__text">red</span>
+        </li>
+        <li class="mdc-list-item" role="menuitem">
+          <span class="mdc-list-item__text">blue</span>
+        </li>
+      </ul>
+    </div>
+  </section>
+  <section id="stage">
+    <div class="mdc-card mdc-elevation--z3" id="switch-menu">
+
+      <div class="mdc-card__actions">
+        <div class="mdc-radio">
+          <input class="mdc-radio__native-control" type="radio" id="radio-1" name="radios">
+          <div class="mdc-radio__background">
+            <div class="mdc-radio__outer-circle"></div>
+            <div class="mdc-radio__inner-circle"></div>
+          </div>
+        </div>
+        <label for="radio-1">4x4</label>
+        <div class="mdc-radio">
+          <input class="mdc-radio__native-control" type="radio" id="radio-2" name="radios">
+          <div class="mdc-radio__background">
+            <div class="mdc-radio__outer-circle"></div>
+            <div class="mdc-radio__inner-circle"></div>
+          </div>
+        </div>
+        <label for="radio-2">48x48</label>
+        <div class="mdc-radio">
+          <input class="mdc-radio__native-control" type="radio" id="radio-3" name="radios">
+          <div class="mdc-radio__background">
+            <div class="mdc-radio__outer-circle"></div>
+            <div class="mdc-radio__inner-circle"></div>
+          </div>
+        </div>
+        <label for="radio-3">Image</label>
+      </div>
+
+    </div>
+    <canvas height='512' width='512' id='codejam-canvas'>
+      Csnvas is not supporting by your browser
+    </canvas>
+  </section>
+</main>
+</body>
+</html>

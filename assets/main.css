@@ -1,0 +1,65 @@
+:root {
+    --mdc-theme-primary: #ffffff;
+    --mdc-theme-on-primary: #212121;
+    --mdc-theme-secondary: #bebebe;
+    --mdc-theme-on-secondary: #000000;
+}
+body {
+
+    margin: 0;
+}
+
+header {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, .5);
+}
+
+
+.mdc-typography {
+    font-family: Roboto, sans-serif;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+
+}
+.mdc-top-app-bar {
+    background-color: var(--mdc-theme-primary);
+    color: var(--mdc-theme-on-primary);
+    top: 0;
+}
+
+
+main {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    margin-top: 98px;
+    padding: 0 10% 2% 2%;
+}
+
+main>* {
+    flex: 1;
+}
+
+
+#menu #action-menu, #menu #color-menu {
+    max-width: 250px;
+    margin-bottom: 75px;
+}
+
+#menu .mdc-list>:last-child {
+    margin-bottom: 1.5em;
+}
+
+
+#stage #switch-menu {
+    max-width: 512px;
+    width: 512px;
+    margin-bottom: 75px;
+}
+#switch-menu label {
+    cursor: pointer;
+    margin-right: 15px;
+}
+
+#stage #canvas {
+    border: 1px solid #f2f2f2;
+}
