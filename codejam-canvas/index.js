@@ -12,52 +12,56 @@ window.addEventListener('DOMContentLoaded', () => {
         }
 
         draw_data = function(data) {
-            error_element.classList.remove('mdc-snackbar--open');
-            const cell_size = this.base_size / data.length;
-            const self = this;
-            data.forEach((row, r_i) =>
-                row.forEach((fill_color, c_i) => {
-                    const [cell_row_start, cell_col_start] = [cell_size * r_i, cell_size * c_i];
-                    self.canvas_ctx.fillStyle = fill_color;
-                    self.canvas_ctx.fillRect(cell_row_start, cell_col_start, cell_size, cell_size);
-                }),
-            );
+            error_element.classList.remove('mdc-snackbar--open'); //close error message if opened
+
+            this.canvas_ctx.clearRect(0, 0, this.element.width, this.element.height); // clear canvas
+            this.element.width = data.size; // set canvas size to data size
+            this.element.height = data.size;
+
+            const imageData = this.canvas_ctx.getImageData(0, 0, data.size, data.size);
+            data.pixels.map((p, i) => {imageData.data[i] = p;});
+            this.canvas_ctx.putImageData(imageData, 0, 0);
+
         };
 
         draw_image = function(img) {
             error_element.classList.remove('mdc-snackbar--open');
-            this.element.width  = this.base_size;
-            this.element.height = this.base_size;
-            this.canvas_ctx.drawImage(img, 0, 0, this.base_size, this.base_size);
+
+            this.canvas_ctx.clearRect(0, 0, this.element.width, this.element.height);
+            this.element.width = img.width;
+            this.element.height = img.height;
+            this.canvas_ctx.drawImage(img, 0, 0);
         };
 
         load_json = function(source) {
-            this.canvas_ctx.clearRect(0, 0, this.base_size, this.base_size);
             const self = this;
             const data = self.datasets[source.value];
             if (!data) {
-                fetch(source.value, {cache: 'force-cache'}).then(res => res.json()).then(data =>
-                    data.map(row =>
-                        row.map(fill_color => {
-                            if (Array.isArray(fill_color)) {
-                                let opacity_param = fill_color.pop();
-                                opacity_param = parseFloat((opacity_param / 255).toFixed(2));
-                                fill_color.push(opacity_param);
-                                fill_color = `rgba(${ fill_color.join(',') })`;
-                            }
-                            else fill_color = '#' + fill_color;
-                            return fill_color;
-                        })
-                    ),
+                /*
+                If data wasn't loaded yet - download it and convert it into a flat array
+                 */
+                fetch(source.value, {cache: 'force-cache'}).then(res => res.json()).then(data => ({
+                        'size': data.length,
+                        'pixels': data.reduce((flat, row) => {
+                            return flat.concat(row.reduce((color_flat, fill_color) => {
+                                if (!Array.isArray(fill_color)) {
+                                    // transform hex representation of color to rgba
+                                    fill_color = fill_color.match(/(..)/g).map(digit => ('0x' + digit) * 1);
+                                    fill_color.push(255); // add 100% opacity
+                                }
+                                return color_flat.concat(fill_color);
+                            }, []));
+                        }, []),
+                    }),
                 ).then(data => {
-                    self.datasets[source.value] = data;
+                    self.datasets[source.value] = data; // save data for further usage
                     self.draw_data(data);
                 }).catch(error => show_error(error));
-            } else self.draw_data(data);
+            }
+            else self.draw_data(data);
         };
 
         load_image = function(source) {
-            this.canvas_ctx.clearRect(0, 0, this.base_size, this.base_size);
             const self = this;
             const img = self.datasets[source.value];
             if (!img) {
