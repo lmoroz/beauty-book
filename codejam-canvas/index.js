@@ -19,7 +19,7 @@ window.addEventListener('DOMContentLoaded', () => {
             this.element.height = data.size;
 
             const imageData = this.canvas_ctx.getImageData(0, 0, data.size, data.size);
-            data.pixels.map((p, i) => {imageData.data[i] = p;});
+            imageData.data.set(data.pixels);
             this.canvas_ctx.putImageData(imageData, 0, 0);
 
         };
@@ -38,7 +38,7 @@ window.addEventListener('DOMContentLoaded', () => {
             const data = self.datasets[source.value];
             if (!data) {
                 /*
-                If data wasn't loaded yet - download it and convert it into a flat array
+                 If data wasn't loaded yet - download it and convert it into a flat array
                  */
                 fetch(source.value, {cache: 'force-cache'}).then(res => res.json()).then(data => ({
                         'size': data.length,
@@ -57,8 +57,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     self.datasets[source.value] = data; // save data for further usage
                     self.draw_data(data);
                 }).catch(error => show_error(error));
-            }
-            else self.draw_data(data);
+            } else self.draw_data(data);
         };
 
         load_image = function(source) {
