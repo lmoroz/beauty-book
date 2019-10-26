@@ -25,20 +25,20 @@
   <section id="menu">
     <div class="mdc-card mdc-elevation--z3" id="action-menu">
       <ul class="mdc-list" role="menu" aria-hidden="true" aria-orientation="vertical" tabindex="-1">
-        <li class="mdc-list-item mdc-ripple-upgraded" role="menuitem">
+        <li class="mdc-list-item" role="menuitem">
           <span class="mdc-list-item__graphic material-icons" aria-hidden="true">wifi</span>
           <span class="mdc-list-item__text">Paint bucket</span>
         </li>
-        <li class="mdc-list-item mdc-ripple-upgraded" role="menuitem">
+        <li class="mdc-list-item" role="menuitem">
           <span class="mdc-list-item__graphic material-icons" aria-hidden="true">wifi</span>
           <span class="mdc-list-item__text">Choose color</span>
         </li>
         <li class="mdc-list-divider" role="separator"></li>
-        <li class="mdc-list-item mdc-ripple-upgraded" role="menuitem">
+        <li class="mdc-list-item" role="menuitem">
           <span class="mdc-list-item__graphic material-icons" aria-hidden="true">wifi</span>
           <span class="mdc-list-item__text">Move</span>
         </li>
-        <li class="mdc-list-item mdc-ripple-upgraded" role="menuitem">
+        <li class="mdc-list-item" role="menuitem">
           <span class="mdc-list-item__graphic material-icons" aria-hidden="true">wifi</span>
           <span class="mdc-list-item__text">Transform</span>
         </li>
@@ -67,7 +67,7 @@
 
       <div class="mdc-card__actions">
         <div class="mdc-radio">
-          <input class="mdc-radio__native-control" type="radio" id="radio-1" name="radios">
+          <input class="mdc-radio__native-control" type="radio" id="radio-1" name="radios" data-type="json" value="https://raw.githubusercontent.com/lmoroz/codejam-canvas/master/data/4x4.json">
           <div class="mdc-radio__background">
             <div class="mdc-radio__outer-circle"></div>
             <div class="mdc-radio__inner-circle"></div>
@@ -75,28 +75,47 @@
         </div>
         <label for="radio-1">4x4</label>
         <div class="mdc-radio">
-          <input class="mdc-radio__native-control" type="radio" id="radio-2" name="radios">
+          <input class="mdc-radio__native-control" type="radio" id="radio-2" name="radios" data-type="json" value="https://raw.githubusercontent.com/lmoroz/codejam-canvas/master/data/32x32.json">
           <div class="mdc-radio__background">
             <div class="mdc-radio__outer-circle"></div>
             <div class="mdc-radio__inner-circle"></div>
           </div>
         </div>
-        <label for="radio-2">48x48</label>
+        <label for="radio-2">32x32</label>
         <div class="mdc-radio">
-          <input class="mdc-radio__native-control" type="radio" id="radio-3" name="radios">
+          <input class="mdc-radio__native-control" type="radio" id="radio-3" name="radios" data-type="image" value="https://raw.githubusercontent.com/lmoroz/codejam-canvas/master/data/image.png">
           <div class="mdc-radio__background">
             <div class="mdc-radio__outer-circle"></div>
             <div class="mdc-radio__inner-circle"></div>
           </div>
         </div>
         <label for="radio-3">Image</label>
+        <div class="mdc-radio">
+          <input class="mdc-radio__native-control" type="radio" id="radio-4" name="radios" data-type="json" value="https://raw.githubusercontent.com/lmoroz/codejam-canvas/master/data/48x48.json">
+          <div class="mdc-radio__background">
+            <div class="mdc-radio__outer-circle"></div>
+            <div class="mdc-radio__inner-circle"></div>
+          </div>
+        </div>
+        <label for="radio-4">Error</label>
       </div>
 
     </div>
-    <canvas height='512' width='512' id='codejam-canvas'>
-      Csnvas is not supporting by your browser
+    <canvas height="512" width="512" id="codejam-canvas">
+      Canvas is not supporting by your browser
     </canvas>
   </section>
+  <div class="mdc-snackbar" id="error-message">
+    <div class="mdc-snackbar__surface">
+      <div class="mdc-snackbar__label" role="status" aria-live="polite">
+        Something went wrong when loading data :(
+      </div>
+      <div class="mdc-snackbar__actions">
+        <button class="mdc-icon-button mdc-snackbar__dismiss material-icons" title="Dismiss">close</button>
+      </div>
+    </div>
+  </div>
 </main>
+<script src="index.js"></script>
 </body>
 </html>

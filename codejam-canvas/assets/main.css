@@ -60,6 +60,10 @@ main>* {
     margin-right: 15px;
 }
 
-#stage #canvas {
-    border: 1px solid #f2f2f2;
+#stage #codejam-canvas {
+    border: 1px solid var(--mdc-theme-secondary);
+}
+
+.mdc-snackbar__label {
+    color: lightsalmon;
 }
