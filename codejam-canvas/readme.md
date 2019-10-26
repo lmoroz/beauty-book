@@ -17,7 +17,7 @@ The data should scaled to canvas size.
 
 Video as example what should be as result of the task (with extra scope)
 ![gif with codejam-canvas](https://cdn.discordapp.com/attachments/636801685288648724/636930783180750849/codejam-canvas.gif)
-
+    
 Thanks Victor (@MitskevichVS) for the gif!
 
 ## Extra functionality
@@ -60,7 +60,7 @@ Thanks Victor (@MitskevichVS) for the gif!
 Maximum points - **50**
 
 #### Basic scope (**30**):
-- [ ] Layout (menu, tools, canvas) - **10**
+- [x] Layout (menu, tools, canvas) - **10**
 - [ ] Drawing color matrixes
   - [ ] 4x4 - **10**
   - [ ] 32x32 - **10**

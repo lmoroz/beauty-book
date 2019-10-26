@@ -12,22 +12,20 @@ window.addEventListener('DOMContentLoaded', () => {
         }
 
         draw_data = function(data) {
-            error_element.classList.remove('mdc-snackbar--open')
+            error_element.classList.remove('mdc-snackbar--open');
             const cell_size = this.base_size / data.length;
             const self = this;
             data.forEach((row, r_i) =>
                 row.forEach((fill_color, c_i) => {
                     const [cell_row_start, cell_col_start] = [cell_size * r_i, cell_size * c_i];
-                    self.canvas_ctx.fillStyle = Array.isArray(fill_color)
-                                                ? `rgba(${ fill_color.join(',') })`
-                                                : '#' + fill_color;
+                    self.canvas_ctx.fillStyle = fill_color;
                     self.canvas_ctx.fillRect(cell_row_start, cell_col_start, cell_size, cell_size);
                 }),
             );
         };
 
         draw_image = function(img) {
-            error_element.classList.remove('mdc-snackbar--open')
+            error_element.classList.remove('mdc-snackbar--open');
             this.canvas_ctx.drawImage(img, 0, 0, this.base_size, this.base_size);
         };
 
@@ -36,8 +34,17 @@ window.addEventListener('DOMContentLoaded', () => {
             const self = this;
             const data = self.datasets[source.value];
             if (!data) {
-                fetch(source.value, {cache: 'force-cache'}).then(res => res.json()).then(data => {
+                fetch(source.value, {cache: 'force-cache'}).then(res => res.json()).then(data =>
+                    data.map(row =>
+                        row.map(fill_color =>
+                            Array.isArray(fill_color)
+                            ? `rgba(${ fill_color.join(',') })`
+                            : '#' + fill_color,
+                        ),
+                    ),
+                ).then(data => {
                     self.datasets[source.value] = data;
+                    console.log({data});
                     self.draw_data(data);
                 }).catch(error => show_error(error));
             } else self.draw_data(data);
