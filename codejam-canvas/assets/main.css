@@ -87,3 +87,26 @@ main>* {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
+
+.menu-color {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1px solid #000000;
+    margin-right: 18px;
+    box-sizing: border-box;
+}
+
+.menu-color-current {
+    background-color: #C4C4C4;
+}
+.menu-color-prev {
+    background-color: #41F795;
+}
+.menu-color-red {
+    background-color: #F74141;
+}
+.menu-color-blue {
+    background-color: #41B6F7;
+}
+
