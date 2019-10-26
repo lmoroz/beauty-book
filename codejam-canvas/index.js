@@ -3,6 +3,13 @@ window.addEventListener('DOMContentLoaded', () => {
     const error_element = document.getElementById('error-message');
     error_element.addEventListener('click', () => error_element.classList.remove('mdc-snackbar--open'));
 
+    const hex_to_rgba = color => {
+        // transform hex representation of color to rgba
+        color = color.match(/(..)/g).map(digit => parseInt(digit, 16));
+        color.push(255); // add 100% opacity
+        return color;
+    };
+
     class CanvasClass {
         constructor(selector) {
             this.base_size = 512;
@@ -40,23 +47,19 @@ window.addEventListener('DOMContentLoaded', () => {
                 /*
                  If data wasn't loaded yet - download it and convert it into a flat array
                  */
-                fetch(source.value, {cache: 'force-cache'}).then(res => res.json()).then(data => ({
+                fetch(source.value, {cache: 'force-cache'}).
+                    then(res => res.json()).
+                    then(data => ({
                         'size': data.length,
-                        'pixels': data.reduce((flat, row) => {
-                            return flat.concat(row.reduce((color_flat, fill_color) => {
-                                if (!Array.isArray(fill_color)) {
-                                    // transform hex representation of color to rgba
-                                    fill_color = fill_color.match(/(..)/g).map(digit => ('0x' + digit) * 1);
-                                    fill_color.push(255); // add 100% opacity
-                                }
-                                return color_flat.concat(fill_color);
-                            }, []));
-                        }, []),
-                    }),
-                ).then(data => {
-                    self.datasets[source.value] = data; // save data for further usage
-                    self.draw_data(data);
-                }).catch(error => show_error(error));
+                        'pixels': Array.isArray(data[0][0])
+                                  ? data.flat()
+                                  : data.flat().map(hex_to_rgba),
+                    })).
+                    then(data => {
+                        self.datasets[source.value] = data; // save data for further usage
+                        self.draw_data(data);
+                    }).
+                    catch(error => show_error(error));
             } else self.draw_data(data);
         };
 
@@ -82,12 +85,13 @@ window.addEventListener('DOMContentLoaded', () => {
         error_element.classList.add('mdc-snackbar--open');
     };
 
-    document.getElementById('switch-menu').addEventListener('change', function(event) {
-        const target = event.target;
-        if (target.tagName === 'INPUT' && target.type === 'radio' && target.checked) {
-            if (target.dataset['type'] === 'json') codejam_canvas.load_json(target);
-            if (target.dataset['type'] === 'image') codejam_canvas.load_image(target);
+    document.getElementById('switch-menu').
+        addEventListener('change', function(event) {
+            const target = event.target;
+            if (target.tagName === 'INPUT' && target.type === 'radio' && target.checked) {
+                if (target.dataset['type'] === 'json') codejam_canvas.load_json(target);
+                if (target.dataset['type'] === 'image') codejam_canvas.load_image(target);
 
-        }
-    });
+            }
+        });
 });
