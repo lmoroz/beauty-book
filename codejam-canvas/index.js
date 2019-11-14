@@ -1,43 +1,50 @@
 window.addEventListener('DOMContentLoaded', () => {
 
-    const error_element = document.getElementById('error-message');
-    error_element.addEventListener('click', () => error_element.classList.remove('mdc-snackbar--open'));
+    const errorElement = document.getElementById('error-message');
+    errorElement.addEventListener('click', () => errorElement.classList.remove('mdc-snackbar--open'));
 
-    const hex_to_rgba = color => {
+    const hexToRgba = color => {
         // transform hex representation of color to rgba
         color = color.match(/(..)/g).map(digit => parseInt(digit, 16));
-        color.push(255); // add 100% opacity
-        return color;
+        color.push(1); // add 100% opacity
+        return `rgba(${ color.join(',')})`;
+    };
+    const rgbaArrayToRgba = color => {
+        color[3] = color[3] / 255; // convert wrong aplha
+        return `rgba(${ color.join(',') })`;
     };
 
     class CanvasClass {
         constructor(selector) {
-            this.base_size = 512;
+            this.baseSize = 512;
             this.datasets = {};
             this.element = document.querySelector(selector);
             this.canvas_ctx = this.element.getContext('2d');
+            this.element.width = this.baseSize;
+            this.element.height = this.baseSize;
         }
 
         draw_data = function(data) {
-            error_element.classList.remove('mdc-snackbar--open'); //close error message if opened
+            errorElement.classList.remove('mdc-snackbar--open'); //close error message if opened
 
             this.canvas_ctx.clearRect(0, 0, this.element.width, this.element.height); // clear canvas
-            this.element.width = data.size; // set canvas size to data size
-            this.element.height = data.size;
-
             const imageData = this.canvas_ctx.getImageData(0, 0, data.size, data.size);
-            imageData.data.set(data.pixels);
-            this.canvas_ctx.putImageData(imageData, 0, 0);
+            const dataMultiply = this.element.width/ data.size;
 
+
+            data.pixels.forEach((dataRow,rIndex) => {
+                dataRow.forEach((dataCol,colIndex) => {
+                    this.canvas_ctx.fillStyle = dataCol;
+                    this.canvas_ctx.fillRect(rIndex* dataMultiply, colIndex* dataMultiply, dataMultiply, dataMultiply);
+                })
+            });
         };
 
         draw_image = function(img) {
-            error_element.classList.remove('mdc-snackbar--open');
+            errorElement.classList.remove('mdc-snackbar--open');
 
             this.canvas_ctx.clearRect(0, 0, this.element.width, this.element.height);
-            this.element.width = img.width;
-            this.element.height = img.height;
-            this.canvas_ctx.drawImage(img, 0, 0);
+            this.canvas_ctx.drawImage(img, 0, 0, this.baseSize, this.baseSize);
         };
 
         load_json = function(source) {
@@ -52,8 +59,8 @@ window.addEventListener('DOMContentLoaded', () => {
                     then(data => ({
                         'size': data.length,
                         'pixels': Array.isArray(data[0][0])
-                                  ? data.flat()
-                                  : data.flat().map(hex_to_rgba),
+                                  ? data.map(dataRow => dataRow.map(dataColor => rgbaArrayToRgba(dataColor)))
+                                  : data.map(dataRow => dataRow.map(dataColor => hexToRgba(dataColor))),
                     })).
                     then(data => {
                         self.datasets[source.value] = data; // save data for further usage
@@ -78,19 +85,19 @@ window.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    const codejam_canvas = new CanvasClass('#codejam-canvas');
+    const codejamCanvas = new CanvasClass('#codejam-canvas');
 
     const show_error = (message = false) => {
         if (message) console.error(message);
-        error_element.classList.add('mdc-snackbar--open');
+        errorElement.classList.add('mdc-snackbar--open');
     };
 
     document.getElementById('switch-menu').
         addEventListener('change', function(event) {
             const target = event.target;
             if (target.tagName === 'INPUT' && target.type === 'radio' && target.checked) {
-                if (target.dataset['type'] === 'json') codejam_canvas.load_json(target);
-                if (target.dataset['type'] === 'image') codejam_canvas.load_image(target);
+                if (target.dataset['type'] === 'json') codejamCanvas.load_json(target);
+                if (target.dataset['type'] === 'image') codejamCanvas.load_image(target);
 
             }
         });
