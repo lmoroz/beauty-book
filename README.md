@@ -144,7 +144,7 @@ git clone https://github.com/lmoroz/beautybook.git
 cd beautybook
 
 # Start all services
-docker compose up -d
+docker compose up -d --build
 
 # Run database migrations
 docker compose exec php-fpm php yii migrate --interactive=0
