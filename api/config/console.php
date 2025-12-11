@@ -2,9 +2,10 @@
 
 $params = require __DIR__ . '/params.php';
 $db = require __DIR__ . '/db.php';
+$redis = require __DIR__ . '/redis.php';
 
 $config = [
-    'id' => 'basic-console',
+    'id' => 'beautybook-console',
     'basePath' => dirname(__DIR__),
     'bootstrap' => ['log'],
     'controllerNamespace' => 'app\commands',
@@ -14,8 +15,10 @@ $config = [
         '@tests' => '@app/tests',
     ],
     'components' => [
+        'redis' => $redis,
         'cache' => [
-            'class' => 'yii\caching\FileCache',
+            'class' => 'yii\redis\Cache',
+            'redis' => 'redis',
         ],
         'log' => [
             'targets' => [
