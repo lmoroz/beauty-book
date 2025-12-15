@@ -58,6 +58,10 @@ $config = [
             'enableStrictParsing' => false,
             'showScriptName' => false,
             'rules' => [
+                // Custom routes (must be before REST UrlRules)
+                'PATCH api/v1/bookings/<id:\d+>/cancel' => 'api/v1/booking/cancel',
+                'GET api/v1/masters/<id:\d+>/schedule' => 'api/v1/master/schedule',
+
                 // API v1 REST routes
                 ['class' => 'yii\rest\UrlRule', 'controller' => 'api/v1/master', 'pluralize' => true],
                 ['class' => 'yii\rest\UrlRule', 'controller' => 'api/v1/service', 'pluralize' => true],
