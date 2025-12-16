@@ -1,180 +1,208 @@
 # BeautyBook
 
-Online booking platform for beauty salons with a shared workspace model — masters rent workstations while the salon provides client management infrastructure: scheduling, online booking, notifications, and analytics.
+Платформа онлайн-записи для салонов красоты с моделью коворкинга — мастера арендуют рабочие места, а салон предоставляет инфраструктуру для работы с клиентами: расписание, онлайн-запись, уведомления и аналитику.
 
-## Business Model
+## Бизнес-модель
 
-Three-sided system with distinct roles:
+Трёхсторонняя система с разделением ролей:
 
-- **Salon** — manages the space, oversees masters, tracks overall performance
-- **Master** — independent specialist who rents a workstation, manages own services, schedule, and clients
-- **Client** — browses the catalog, books appointments, receives reminders
+- **Салон** — управляет пространством, контролирует мастеров, отслеживает общую эффективность
+- **Мастер** — независимый специалист, арендующий рабочее место, управляет своими услугами, расписанием и клиентами
+- **Клиент** — просматривает каталог, записывается на приём, получает напоминания
 
-## Tech Stack
+## Стек технологий
 
-| Layer | Technology |
-|-------|-----------|
-| Backend | PHP 7.4+ / Yii2 (Basic Template) |
-| Database | MySQL 8.0 |
-| Cache / Queue / Locks | Redis 7.x |
-| Frontend | Vue 3 + Vite |
-| HTTP Server | Nginx |
-| Infrastructure | Docker Compose |
+| Слой | Технология |
+|------|-----------|
+| Бэкенд | PHP 7.4+ / Yii2 (Basic Template) |
+| База данных | MySQL 8.0 |
+| Кеш / Очередь / Блокировки | Redis 7.x |
+| Фронтенд | Vue 3 + Vite |
+| HTTP-сервер | Nginx |
+| Инфраструктура | Docker Compose |
 
-## Architecture
+## Архитектура
 
-The application follows a decoupled architecture — Yii2 serves a versioned REST API, Vue 3 SPA consumes it as a standalone client.
+Приложение построено по принципу разделения — Yii2 предоставляет версионированный REST API, Vue 3 SPA потребляет его как самостоятельный клиент.
 
 ```
 beautybook/
 │
-├── docker/                         # Docker configuration
-│   ├── nginx/default.conf          # Nginx reverse proxy config
-│   ├── php/Dockerfile              # PHP-FPM with extensions
-│   └── redis/redis.conf            # Redis configuration
+├── docker/                         # Конфигурация Docker
+│   ├── nginx/default.conf          # Nginx reverse proxy
+│   ├── php/Dockerfile              # PHP-FPM с расширениями
+│   └── redis/redis.conf            # Конфигурация Redis
 │
 ├── api/                            # Yii2 Basic Template — REST API
 │   ├── config/
-│   │   ├── db.php                  # MySQL connection
-│   │   ├── redis.php               # Redis connection
-│   │   └── web.php                 # Application config, URL rules
-│   ├── controllers/api/v1/         # Versioned API controllers
+│   │   ├── db.php                  # Подключение к MySQL
+│   │   ├── redis.php               # Подключение к Redis
+│   │   └── web.php                 # Конфигурация приложения, URL-правила
+│   ├── controllers/api/v1/         # Версионированные API-контроллеры
 │   │   ├── BookingController.php
 │   │   ├── MasterController.php
 │   │   ├── ScheduleController.php
 │   │   └── ServiceController.php
-│   ├── models/                     # ActiveRecord models
+│   ├── models/                     # ActiveRecord-модели
 │   │   ├── Booking.php
 │   │   ├── Master.php
 │   │   ├── Salon.php
 │   │   ├── Service.php
 │   │   └── TimeSlot.php
-│   ├── components/                 # Redis-powered components
-│   │   ├── RedisLock.php           # Distributed lock for booking
-│   │   ├── RedisQueue.php          # Notification queue
-│   │   └── RateLimiter.php         # API rate limiting
+│   ├── components/                 # Redis-компоненты
+│   │   ├── RedisLock.php           # Распределённая блокировка при бронировании
+│   │   ├── RedisQueue.php          # Очередь уведомлений
+│   │   └── RateLimiter.php         # Ограничение частоты запросов
 │   ├── workers/
-│   │   └── NotificationWorker.php  # Queue consumer (console command)
-│   └── migrations/                 # Database schema
+│   │   └── NotificationWorker.php  # Обработчик очереди (консольная команда)
+│   └── migrations/                 # Схема базы данных
 │
 ├── frontend/                       # Vue 3 SPA (Vite)
 │   └── src/
-│       ├── views/                  # Page components
-│       ├── components/             # Reusable UI components
-│       ├── composables/            # Composition API hooks
-│       ├── stores/                 # Pinia state management
+│       ├── views/                  # Страницы
+│       ├── components/             # Переиспользуемые UI-компоненты
+│       ├── composables/            # Хуки Composition API
+│       ├── stores/                 # Pinia — управление состоянием
 │       ├── router/                 # Vue Router
-│       └── api/                    # Axios HTTP layer
+│       └── api/                    # Axios HTTP-слой
 │
 ├── docker compose.yml
 └── README.md
 ```
 
-## Core Features
+## Основные возможности
 
-### Online Booking
+### Онлайн-запись
 
-Clients select a master, choose a service, pick an available time slot, and confirm the appointment. The booking flow uses a **Redis distributed lock** (`SETNX` with TTL) to prevent race conditions when two clients attempt to book the same slot simultaneously.
+Клиент выбирает мастера, услугу, свободный тайм-слот и подтверждает запись. Процесс бронирования использует **распределённую блокировку Redis** (`SETNX` с TTL), чтобы предотвратить гонку при одновременном бронировании одного слота двумя клиентами.
 
-### Smart Scheduling
+### Умное расписание
 
-Masters manage their availability through a slot-based schedule. Slots are generated from working hours templates and can be individually blocked or opened. Schedule data is cached in Redis with automatic invalidation on changes.
+Мастера управляют доступностью через слоты расписания. Слоты генерируются на основе шаблонов рабочих часов и могут быть индивидуально заблокированы или открыты. Данные расписания кешируются в Redis с автоматической инвалидацией при изменениях.
 
-### Notification Queue
+### Очередь уведомлений
 
-Booking confirmations and appointment reminders are processed asynchronously via a **Redis-backed queue** (Lists with `LPUSH`/`BRPOP`). A dedicated console worker consumes the queue and dispatches notifications.
+Подтверждения бронирований и напоминания о записях обрабатываются асинхронно через **очередь на Redis** (Lists с `LPUSH`/`BRPOP`). Выделенный консольный воркер потребляет очередь и отправляет уведомления.
 
-### API Rate Limiting
+### Ограничение частоты запросов (Rate Limiting)
 
-Public-facing endpoints are protected by a **sliding window rate limiter** built on Redis Sorted Sets. This prevents booking spam and API abuse without impacting legitimate traffic.
+Публичные эндпоинты защищены **Sliding Window Rate Limiter** на основе Redis Sorted Sets. Это предотвращает спам бронирований и злоупотребление API без влияния на легитимный трафик.
 
-### Real-Time Updates
+### Обновления в реальном времени
 
-Schedule changes are broadcast via **Redis Pub/Sub**, enabling masters to see new bookings and cancellations in real time without page refresh.
+Изменения расписания транслируются через **Redis Pub/Sub**, позволяя мастерам видеть новые бронирования и отмены в реальном времени без перезагрузки страницы.
 
-### Role-Based Access
+### Ролевой доступ
 
-| Role | Access |
+| Роль | Доступ |
 |------|--------|
-| Client | Browse catalog, book appointments, view own history |
-| Master | Manage schedule, services & pricing, view statistics |
-| Admin | Manage masters, salon settings, view analytics |
+| Клиент | Просмотр каталога, запись на приём, история записей |
+| Мастер | Управление расписанием, услугами и ценами, статистика |
+| Админ | Управление мастерами, настройки салона, аналитика |
+
+### 🤖 AI-агент (Booking Assistant)
+
+В приложении встроен **AI-агент** — интеллектуальный помощник в онлайн-чате, который помогает клиентам подобрать мастера, услугу и удобное время для записи в естественно-языковом диалоге.
+
+**Как это работает:**
+
+```
+Клиент (Vue Chat Widget)
+  ↕ WebSocket / SSE
+Yii2 API (POST /api/v1/chat)
+  ↕ HTTP
+LLM-провайдер (OpenAI / Ollama)
+  ↕ Function Calling
+Инструменты агента → БД / Redis
+```
+
+Агент умеет:
+- Искать мастеров по специализации или имени
+- Показывать услуги и цены конкретного мастера
+- Проверять свободные слоты на нужную дату
+- Создавать и отменять бронирования
+- Сообщать статус записи
+
+Контекст разговора хранится в **Redis** (session-based), история бесед персистируется в **MySQL**.
+
+Если агент не может обработать запрос — предлагает связаться с администратором салона.
 
 ## API
 
-Base path: `/api/v1/`
+Базовый путь: `/api/v1/`
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/masters` | List salon masters |
-| `GET` | `/masters/{id}` | Master profile with services |
-| `GET` | `/masters/{id}/schedule?date=` | Available time slots |
-| `POST` | `/bookings` | Create a booking |
-| `GET` | `/bookings/{id}` | Booking status |
-| `PATCH` | `/bookings/{id}/cancel` | Cancel a booking |
-| `GET` | `/master/dashboard` | Master's dashboard |
-| `PATCH` | `/master/schedule` | Update schedule |
-| `GET` | `/admin/analytics` | Salon analytics |
+| Метод   | Эндпоинт                        | Описание                       |
+| ------- | -------------------------------- | ------------------------------ |
+| `GET`   | `/masters`                       | Список мастеров салона         |
+| `GET`   | `/masters/{id}`                  | Профиль мастера с услугами     |
+| `GET`   | `/masters/{id}/schedule?date=`   | Свободные тайм-слоты          |
+| `POST`  | `/bookings`                      | Создать бронирование           |
+| `GET`   | `/bookings/{id}`                 | Статус бронирования            |
+| `PATCH` | `/bookings/{id}/cancel`          | Отмена бронирования            |
+| `GET`   | `/master/dashboard`              | Дашборд мастера                |
+| `PATCH` | `/master/schedule`               | Управление расписанием         |
+| `GET`   | `/admin/analytics`               | Аналитика салона               |
+| `POST`  | `/chat`                          | Чат с AI-агентом               |
 
-## Redis Usage
+## Использование Redis
 
-Redis is **not just a cache** in this project — it serves six distinct roles:
+Redis в проекте — **не просто кеш**, а выполняет шесть различных ролей:
 
-| Role | Data Structure | Purpose |
-|------|---------------|---------|
-| Distributed Lock | `SETNX` + TTL | Prevent double-booking of time slots |
-| Task Queue | Lists (`LPUSH`/`BRPOP`) | Async notification processing |
-| Rate Limiter | Sorted Sets | Sliding window API protection |
-| Pub/Sub | Channels | Real-time schedule broadcasting |
-| Cache | Strings/Hashes + TTL | Schedule and catalog caching |
-| Session Store | Yii2 Redis Session | Server-side session management |
+| Роль | Структура данных | Назначение |
+|------|-----------------|-----------|
+| Распределённая блокировка | `SETNX` + TTL | Предотвращение двойного бронирования |
+| Очередь задач | Lists (`LPUSH`/`BRPOP`) | Асинхронная обработка уведомлений |
+| Rate Limiter | Sorted Sets | Sliding window защита API |
+| Pub/Sub | Каналы | Трансляция изменений расписания |
+| Кеш | Strings/Hashes + TTL | Кеширование расписания и каталога |
+| Хранилище сессий | Yii2 Redis Session | Серверные сессии |
 
-## Getting Started
+## Быстрый старт
 
-### Prerequisites
+### Предварительные требования
 
 - Docker & Docker Compose v2
 - Git
 
-### Quick Start
+### Запуск
 
 ```bash
-# Clone the repository
+# Клонировать репозиторий
 git clone https://github.com/lmoroz/beautybook.git
 cd beautybook
 
-# Start all services
+# Запустить все сервисы
 docker compose up -d --build
 
-# Run database migrations
+# Выполнить миграции
 docker compose exec php-fpm php yii migrate --interactive=0
 
-# The application is now available:
-# - Frontend:  http://localhost:3000
+# Приложение доступно:
+# - Фронтенд:  http://localhost:3000
 # - API:       http://localhost:8080/api/v1/
 # - MySQL:     localhost:3306
 # - Redis:     localhost:6379
 ```
 
-### Stop
+### Остановка
 
 ```bash
 docker compose down
 ```
 
-### Reset Database
+### Сброс базы данных
 
 ```bash
 docker compose exec php-fpm php yii migrate/redo --interactive=0
 ```
 
-### Run Notification Worker
+### Запуск воркера уведомлений
 
 ```bash
 docker compose exec php-fpm php yii queue/listen
 ```
 
-## Database Schema
+## Схема базы данных
 
 ```
 ┌──────────┐     ┌──────────┐     ┌──────────┐
@@ -196,22 +224,22 @@ time_slots 1 ──< 1  bookings
 services   1 ──< N  bookings
 ```
 
-## Development
+## Разработка
 
-### Backend (Yii2 API)
+### Бэкенд (Yii2 API)
 
 ```bash
-# Access PHP container shell
+# Зайти в PHP-контейнер
 docker compose exec php-fpm bash
 
-# Run migrations
+# Выполнить миграции
 php yii migrate
 
-# Create new migration
+# Создать новую миграцию
 php yii migrate/create create_bookings_table
 ```
 
-### Frontend (Vue 3)
+### Фронтенд (Vue 3)
 
 ```bash
 cd frontend
@@ -219,17 +247,17 @@ npm install
 npm run dev
 ```
 
-### Code Standards
+### Стандарты кода
 
 - **PHP:** PSR-12
-- **Vue:** Composition API (`<script setup>`), no Options API
-- **Commits:** [Conventional Commits](https://www.conventionalcommits.org/)
-- **Language:** English for all code, comments, and documentation
+- **Vue:** Composition API (`<script setup>`), без Options API
+- **Коммиты:** [Conventional Commits](https://www.conventionalcommits.org/)
+- **Язык:** английский для кода, комментариев и документации
 
-## Screenshots
+## Скриншоты
 
-> Coming soon
+> Скоро будут
 
-## License
+## Лицензия
 
 MIT
