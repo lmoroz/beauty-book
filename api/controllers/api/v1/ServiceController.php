@@ -5,15 +5,6 @@ namespace app\controllers\api\v1;
 use yii\rest\ActiveController;
 use yii\filters\Cors;
 
-/**
- * Service API controller.
- *
- * GET    /api/v1/services       → list
- * GET    /api/v1/services/{id}  → view
- * POST   /api/v1/services       → create
- * PUT    /api/v1/services/{id}  → update
- * DELETE /api/v1/services/{id}  → delete
- */
 class ServiceController extends ActiveController
 {
     public $modelClass = 'app\models\Service';
@@ -54,7 +45,6 @@ class ServiceController extends ActiveController
                 $query->andWhere(['category' => $category]);
             }
 
-            // Only active by default
             $showAll = \Yii::$app->request->get('show_all', false);
             if (!$showAll) {
                 $query->andWhere(['is_active' => true]);

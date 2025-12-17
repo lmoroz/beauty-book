@@ -4,21 +4,11 @@ namespace app\controllers\api\v1;
 
 use app\models\Master;
 use app\models\TimeSlot;
+use Yii;
 use yii\rest\ActiveController;
 use yii\filters\Cors;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
-
-/**
- * Master API controller.
- *
- * GET    /api/v1/masters                   → list
- * GET    /api/v1/masters/{id}              → view
- * GET    /api/v1/masters/{id}/schedule     → free slots for a date
- * POST   /api/v1/masters                   → create
- * PUT    /api/v1/masters/{id}              → update
- * DELETE /api/v1/masters/{id}              → delete
- */
 class MasterController extends ActiveController
 {
     public $modelClass = 'app\models\Master';
@@ -27,7 +17,6 @@ class MasterController extends ActiveController
     {
         $behaviors = parent::behaviors();
 
-        // CORS for Vue dev server
         $behaviors['cors'] = [
             'class' => Cors::class,
             'cors' => [
@@ -46,7 +35,6 @@ class MasterController extends ActiveController
     {
         $actions = parent::actions();
 
-        // Customize index action to expand services and filter by salon
         $actions['index']['prepareDataProvider'] = function () {
             $query = $this->modelClass::find()
                 ->with(['activeServices'])
@@ -73,39 +61,29 @@ class MasterController extends ActiveController
         return $actions;
     }
 
-    /**
-     * Get available time slots for a master on a given date.
-     *
-     * GET /api/v1/masters/{id}/schedule?date=2025-12-20
-     *
-     * Uses Redis cache with key `cache:schedule:{master_id}:{date}` (TTL 5 min).
-     */
     public function actionSchedule(int $id): array
     {
         $master = Master::findOne($id);
         if (!$master) {
-            throw new NotFoundHttpException('Master not found.');
+            throw new NotFoundHttpException(Yii::t('master', 'Master not found.'));
         }
 
         $date = \Yii::$app->request->get('date');
         if (!$date) {
-            throw new BadRequestHttpException('Parameter "date" is required (format: Y-m-d).');
+            throw new BadRequestHttpException(Yii::t('master', 'Parameter "date" is required (format: Y-m-d).'));
         }
 
-        // Validate date format
         if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
-            throw new BadRequestHttpException('Invalid date format. Use Y-m-d.');
+            throw new BadRequestHttpException(Yii::t('master', 'Invalid date format. Use Y-m-d.'));
         }
 
-        // Try Redis cache first
         $cacheKey = "cache:schedule:{$id}:{$date}";
-        $cached = \Yii::$app->redis->get($cacheKey);
+        $cached = Yii::$app->redis->get($cacheKey);
 
         if ($cached !== null && $cached !== false) {
             return json_decode($cached, true);
         }
 
-        // Query free slots
         $slots = TimeSlot::findFreeSlots($id, $date)->asArray()->all();
 
         $result = [
@@ -115,8 +93,7 @@ class MasterController extends ActiveController
             'total' => count($slots),
         ];
 
-        // Cache for 5 minutes
-        \Yii::$app->redis->set($cacheKey, json_encode($result), 'EX', 300);
+        Yii::$app->redis->set($cacheKey, json_encode($result), 'EX', 300);
 
         return $result;
     }

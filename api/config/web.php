@@ -8,6 +8,8 @@ $config = [
     'id' => 'beautybook',
     'name' => 'BeautyBook',
     'basePath' => dirname(__DIR__),
+    'language' => 'ru-RU',
+    'sourceLanguage' => 'en-US',
     'bootstrap' => ['log'],
     'aliases' => [
         '@bower' => '@vendor/bower-asset',
@@ -21,6 +23,11 @@ $config = [
             ],
         ],
         'redis' => $redis,
+        'queue' => [
+            'class' => 'app\components\RedisQueue',
+            'redis' => 'redis',
+            'keyPrefix' => 'queue:',
+        ],
         'cache' => [
             'class' => 'yii\redis\Cache',
             'redis' => 'redis',
@@ -53,16 +60,26 @@ $config = [
             ],
         ],
         'db' => $db,
+        'i18n' => [
+            'translations' => [
+                'booking' => [
+                    'class' => 'yii\i18n\DbMessageSource',
+                    'sourceLanguage' => 'en-US',
+                ],
+                'master' => [
+                    'class' => 'yii\i18n\DbMessageSource',
+                    'sourceLanguage' => 'en-US',
+                ],
+            ],
+        ],
         'urlManager' => [
             'enablePrettyUrl' => true,
             'enableStrictParsing' => false,
             'showScriptName' => false,
             'rules' => [
-                // Custom routes (must be before REST UrlRules)
                 'PATCH api/v1/bookings/<id:\d+>/cancel' => 'api/v1/booking/cancel',
                 'GET api/v1/masters/<id:\d+>/schedule' => 'api/v1/master/schedule',
 
-                // API v1 REST routes
                 ['class' => 'yii\rest\UrlRule', 'controller' => 'api/v1/master', 'pluralize' => true],
                 ['class' => 'yii\rest\UrlRule', 'controller' => 'api/v1/service', 'pluralize' => true],
                 ['class' => 'yii\rest\UrlRule', 'controller' => 'api/v1/booking', 'pluralize' => true],
@@ -73,7 +90,6 @@ $config = [
 ];
 
 if (YII_ENV_DEV) {
-    // configuration adjustments for 'dev' environment
     $config['bootstrap'][] = 'debug';
     $config['modules']['debug'] = [
         'class' => 'yii\debug\Module',

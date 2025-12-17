@@ -56,7 +56,7 @@ class Booking extends ActiveRecord
             [['cancel_reason'], 'string', 'max' => 500],
             [['time_slot_id'], 'exist', 'targetClass' => TimeSlot::class, 'targetAttribute' => 'id'],
             [['service_id'], 'exist', 'targetClass' => Service::class, 'targetAttribute' => 'id'],
-            [['time_slot_id'], 'unique', 'message' => 'This time slot is already booked.'],
+            [['time_slot_id'], 'unique', 'message' => \Yii::t('booking', 'This time slot is already booked.')],
         ];
     }
 
