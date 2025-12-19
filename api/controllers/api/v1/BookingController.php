@@ -30,6 +30,22 @@ class BookingController extends ActiveController
             ],
         ];
 
+        $behaviors['rateLimiterCreate'] = [
+            'class' => \app\components\RateLimiter::class,
+            'limit' => 5,
+            'window' => 60,
+            'only' => ['create'],
+            'category' => 'booking',
+        ];
+
+        $behaviors['rateLimiterCancel'] = [
+            'class' => \app\components\RateLimiter::class,
+            'limit' => 10,
+            'window' => 60,
+            'only' => ['cancel'],
+            'category' => 'booking',
+        ];
+
         return $behaviors;
     }
 
