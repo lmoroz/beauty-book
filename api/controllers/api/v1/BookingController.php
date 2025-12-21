@@ -137,6 +137,10 @@ class BookingController extends ActiveController
                 'booking_id' => $booking->id,
             ]);
 
+            Yii::$app->schedulePublisher->publishSlotBooked(
+                $slot->master_id, $slotId, $slot->date
+            );
+
             Yii::$app->response->statusCode = 201;
             return $booking;
 
@@ -176,6 +180,13 @@ class BookingController extends ActiveController
             'booking_id' => $booking->id,
             'reason' => $reason,
         ]);
+
+        $slot = $booking->timeSlot;
+        if ($slot) {
+            Yii::$app->schedulePublisher->publishSlotFreed(
+                $slot->master_id, $slot->id, $slot->date
+            );
+        }
 
         return $booking;
     }

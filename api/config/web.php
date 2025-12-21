@@ -28,6 +28,10 @@ $config = [
             'redis' => 'redis',
             'keyPrefix' => 'queue:',
         ],
+        'schedulePublisher' => [
+            'class' => 'app\components\SchedulePublisher',
+            'redis' => 'redis',
+        ],
         'cache' => [
             'class' => 'yii\redis\Cache',
             'redis' => 'redis',
@@ -79,6 +83,7 @@ $config = [
             'rules' => [
                 'PATCH api/v1/bookings/<id:\d+>/cancel' => 'api/v1/booking/cancel',
                 'GET api/v1/masters/<id:\d+>/schedule' => 'api/v1/master/schedule',
+                'GET api/v1/masters/<id:\d+>/schedule/events' => 'api/v1/schedule-event/stream',
 
                 ['class' => 'yii\rest\UrlRule', 'controller' => 'api/v1/master', 'pluralize' => true],
                 ['class' => 'yii\rest\UrlRule', 'controller' => 'api/v1/service', 'pluralize' => true],
