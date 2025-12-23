@@ -1,37 +1,23 @@
 <script setup>
-import { RouterView, RouterLink } from 'vue-router'
+import { computed } from 'vue'
+import { RouterView, useRoute } from 'vue-router'
+import AppHeader from './components/layout/AppHeader.vue'
+import AppFooter from './components/layout/AppFooter.vue'
+import ChatWidget from './components/chat/ChatWidget.vue'
+
+const route = useRoute()
+
+const isMasterArea = computed(() => route.path.startsWith('/master'))
+const showChat = computed(() => !isMasterArea.value)
+const showHeaderFooter = computed(() => !isMasterArea.value)
 </script>
 
 <template>
-  <header class="app-header">
-    <nav>
-      <RouterLink to="/">Home</RouterLink>
-      <RouterLink to="/masters">Masters</RouterLink>
-      <RouterLink to="/booking">Booking</RouterLink>
-    </nav>
-  </header>
+  <AppHeader v-if="showHeaderFooter" />
 
   <RouterView />
+
+  <AppFooter v-if="showHeaderFooter" />
+
+  <ChatWidget v-if="showChat" />
 </template>
-
-<style scoped>
-.app-header {
-  padding: 1rem 2rem;
-  border-bottom: 1px solid #eee;
-}
-
-.app-header nav {
-  display: flex;
-  gap: 1.5rem;
-}
-
-.app-header a {
-  text-decoration: none;
-  color: inherit;
-  font-weight: 500;
-}
-
-.app-header a.router-link-active {
-  color: #646cff;
-}
-</style>

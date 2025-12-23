@@ -12,20 +12,65 @@ const routes = [
     component: () => import('../views/MastersPage.vue'),
   },
   {
-    path: '/masters/:id',
-    name: 'master-profile',
-    component: () => import('../views/MasterProfilePage.vue'),
+    path: '/about',
+    name: 'about',
+    component: () => import('../views/AboutPage.vue'),
   },
   {
-    path: '/booking',
-    name: 'booking',
-    component: () => import('../views/BookingPage.vue'),
+    path: '/booking/:id',
+    name: 'booking-status',
+    component: () => import('../views/BookingStatusPage.vue'),
+  },
+  {
+    path: '/master/login',
+    name: 'master-login',
+    component: () => import('../views/master/MasterLoginPage.vue'),
+  },
+  {
+    path: '/master/dashboard',
+    name: 'master-dashboard',
+    component: () => import('../views/master/MasterDashboardPage.vue'),
+    meta: { requiresAuth: true },
+    children: [
+      {
+        path: '',
+        name: 'master-schedule',
+        component: () => import('../views/master/ScheduleView.vue'),
+      },
+      {
+        path: 'bookings',
+        name: 'master-bookings',
+        component: () => import('../views/master/BookingsView.vue'),
+      },
+      {
+        path: 'services',
+        name: 'master-services',
+        component: () => import('../views/master/ServicesView.vue'),
+      },
+      {
+        path: 'profile',
+        name: 'master-profile',
+        component: () => import('../views/master/ProfileView.vue'),
+      },
+    ],
   },
 ]
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) return savedPosition
+    if (to.hash) return { el: to.hash, behavior: 'smooth' }
+    return { top: 0 }
+  },
+})
+
+router.beforeEach((to) => {
+  if (to.meta.requiresAuth) {
+    const token = localStorage.getItem('master_token')
+    if (!token) return { name: 'master-login' }
+  }
 })
 
 export default router

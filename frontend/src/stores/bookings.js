@@ -1,56 +1,40 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
 import api from '../api/client.js'
 
-export const useBookingsStore = defineStore('bookings', () => {
-  const currentBooking = ref(null)
-  const loading = ref(false)
-  const error = ref(null)
+export const useBookingsStore = defineStore('bookings', {
+  state: () => ({
+    bookings: [],
+    currentBooking: null,
+    loading: false,
+    error: null,
+  }),
 
-  async function createBooking(payload) {
-    loading.value = true
-    error.value = null
-    try {
-      const { data } = await api.post('/bookings', payload)
-      currentBooking.value = data
-      return data
-    } catch (e) {
-      error.value = e.response?.data?.message || e.message
-      return null
-    } finally {
-      loading.value = false
-    }
-  }
+  actions: {
+    async createBooking(data) {
+      this.loading = true
+      this.error = null
+      try {
+        const response = await api.post('/bookings', data)
+        return response.data
+      } catch (e) {
+        this.error = e.response?.data?.message || 'Ошибка создания записи'
+        throw e
+      } finally {
+        this.loading = false
+      }
+    },
 
-  async function fetchBooking(id) {
-    loading.value = true
-    error.value = null
-    try {
-      const { data } = await api.get(`/bookings/${id}`)
-      currentBooking.value = data
-      return data
-    } catch (e) {
-      error.value = e.message
-      return null
-    } finally {
-      loading.value = false
-    }
-  }
-
-  async function cancelBooking(id) {
-    loading.value = true
-    error.value = null
-    try {
-      const { data } = await api.patch(`/bookings/${id}/cancel`)
-      currentBooking.value = data
-      return data
-    } catch (e) {
-      error.value = e.response?.data?.message || e.message
-      return null
-    } finally {
-      loading.value = false
-    }
-  }
-
-  return { currentBooking, loading, error, createBooking, fetchBooking, cancelBooking }
+    async fetchBooking(id) {
+      this.loading = true
+      this.error = null
+      try {
+        const response = await api.get(`/bookings/${id}`)
+        this.currentBooking = response.data
+      } catch (e) {
+        this.error = e.response?.data?.message || 'Запись не найдена'
+      } finally {
+        this.loading = false
+      }
+    },
+  },
 })
