@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue'
+import { X, ChevronDown, SendHorizontal, MessageCircle } from 'lucide-vue-next'
 
 const expanded = ref(false)
 </script>
@@ -9,8 +10,18 @@ const expanded = ref(false)
     <Transition name="chat-expand">
       <div v-if="expanded" class="chat-widget__window">
         <div class="chat-widget__header">
-          <span>Ассистент La Bellezza</span>
-          <button @click="expanded = false">&times;</button>
+          <div class="chat-widget__header-info">
+            <MessageCircle :size="18" :stroke-width="1.5" />
+            <span>Ассистент La Bellezza</span>
+          </div>
+          <div class="chat-widget__header-actions">
+            <button aria-label="Свернуть" @click="expanded = false">
+              <ChevronDown :size="20" :stroke-width="1.5" />
+            </button>
+            <button aria-label="Закрыть" @click="expanded = false">
+              <X :size="20" :stroke-width="1.5" />
+            </button>
+          </div>
         </div>
         <div class="chat-widget__messages">
           <p class="chat-widget__bot-msg">
@@ -20,13 +31,15 @@ const expanded = ref(false)
         </div>
         <div class="chat-widget__input">
           <input type="text" placeholder="Напишите сообщение..." />
-          <button>→</button>
+          <button aria-label="Отправить">
+            <SendHorizontal :size="20" :stroke-width="1.5" />
+          </button>
         </div>
       </div>
     </Transition>
 
     <button v-if="!expanded" class="chat-widget__trigger" @click="expanded = true">
-      <span class="chat-widget__avatar">💬</span>
+      <MessageCircle :size="28" :stroke-width="1.5" />
     </button>
   </div>
 </template>

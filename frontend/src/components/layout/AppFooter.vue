@@ -1,21 +1,51 @@
+<script setup>
+import { Instagram, Send, MessageCircle, Phone, MapPin, Clock } from 'lucide-vue-next'
+</script>
+
 <template>
   <footer class="app-footer">
     <div class="app-footer__inner">
       <div class="app-footer__brand">
         <span class="app-footer__logo">La Bellezza</span>
         <p>Искусство красоты в каждой детали</p>
+
+        <div class="app-footer__socials">
+          <a href="#" aria-label="Instagram" class="app-footer__social-link">
+            <Instagram :size="20" :stroke-width="1.5" />
+          </a>
+          <a href="#" aria-label="Telegram" class="app-footer__social-link">
+            <Send :size="20" :stroke-width="1.5" />
+          </a>
+          <a href="#" aria-label="WhatsApp" class="app-footer__social-link">
+            <MessageCircle :size="20" :stroke-width="1.5" />
+          </a>
+        </div>
       </div>
 
       <div class="app-footer__info">
         <h4>Контакты</h4>
-        <p>г. Москва, ул. Примерная, 42</p>
-        <p><a href="tel:+74951234567">+7 (495) 123-45-67</a></p>
+        <p>
+          <MapPin :size="14" :stroke-width="1.5" class="app-footer__icon" />
+          г. Москва, ул. Примерная, 42
+        </p>
+        <p>
+          <a href="tel:+74951234567">
+            <Phone :size="14" :stroke-width="1.5" class="app-footer__icon" />
+            +7 (495) 123-45-67
+          </a>
+        </p>
       </div>
 
       <div class="app-footer__hours">
         <h4>Часы работы</h4>
-        <p>Пн — Пт: 9:00 — 21:00</p>
-        <p>Сб — Вс: 10:00 — 20:00</p>
+        <p>
+          <Clock :size="14" :stroke-width="1.5" class="app-footer__icon" />
+          Пн — Пт: 9:00 — 21:00
+        </p>
+        <p>
+          <Clock :size="14" :stroke-width="1.5" class="app-footer__icon" />
+          Сб — Вс: 10:00 — 20:00
+        </p>
       </div>
     </div>
 
@@ -64,10 +94,44 @@
 .app-footer a {
   text-decoration: none;
   transition: color 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
 }
 
 .app-footer a:hover {
   color: var(--color-accent-gold);
+}
+
+.app-footer__icon {
+  flex-shrink: 0;
+  vertical-align: middle;
+  margin-right: 0.25rem;
+  opacity: 0.6;
+}
+
+.app-footer__socials {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.app-footer__social-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  transition: color 0.2s, border-color 0.2s, background-color 0.2s;
+}
+
+.app-footer__social-link:hover {
+  color: var(--color-accent-gold);
+  border-color: var(--color-accent-gold);
+  background: rgba(200, 169, 110, 0.08);
 }
 
 .app-footer__bottom {
@@ -76,5 +140,16 @@
   padding-top: 1.5rem;
   border-top: 1px solid var(--color-border);
   text-align: center;
+}
+
+@media (max-width: 768px) {
+  .app-footer__inner {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  .app-footer__socials {
+    justify-content: center;
+  }
 }
 </style>
