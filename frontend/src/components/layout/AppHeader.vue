@@ -23,26 +23,28 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
 </script>
 
 <template>
-  <header class="app-header" :class="{ 'app-header--scrolled': scrolled }">
-    <div class="app-header__inner">
-      <RouterLink to="/" class="app-header__logo">La Bellezza</RouterLink>
+  <header class="header" :class="{ 'header--scrolled': scrolled }">
+    <div class="container header__inner">
+      <RouterLink to="/" class="header__logo">
+        <span>La Bellezza</span>
+      </RouterLink>
 
-      <nav class="app-header__nav">
+      <nav class="header__nav">
         <RouterLink to="/" @click="closeMobileMenu">Главная</RouterLink>
         <RouterLink to="/masters" @click="closeMobileMenu">Наши мастера</RouterLink>
         <RouterLink to="/about" @click="closeMobileMenu">О салоне</RouterLink>
       </nav>
 
-      <div class="app-header__actions">
-        <a href="tel:+74951234567" class="app-header__phone">
-          <Phone :size="18" :stroke-width="1.5" />
-          <span>+7 (495) 123-45-67</span>
+      <div class="header__actions">
+        <a href="tel:+79991234567" class="header__phone">
+          <Phone :size="16" :stroke-width="1.5" />
+          <span>+7 (999) 123-45-67</span>
         </a>
-        <RouterLink to="/masters" class="app-header__cta">Записаться</RouterLink>
+        <RouterLink to="/masters" class="btn btn-gold">Записаться</RouterLink>
       </div>
 
       <button
-        class="app-header__burger"
+        class="header__burger"
         aria-label="Меню"
         @click="toggleMobileMenu"
       >
@@ -51,16 +53,16 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
     </div>
 
     <Transition name="mobile-menu">
-      <div v-if="mobileMenuOpen" class="app-header__mobile-overlay" @click.self="closeMobileMenu">
-        <nav class="app-header__mobile-nav">
+      <div v-if="mobileMenuOpen" class="mobile-menu" @click.self="closeMobileMenu">
+        <nav class="mobile-menu__nav">
           <RouterLink to="/" @click="closeMobileMenu">Главная</RouterLink>
           <RouterLink to="/masters" @click="closeMobileMenu">Наши мастера</RouterLink>
           <RouterLink to="/about" @click="closeMobileMenu">О салоне</RouterLink>
-          <a href="tel:+74951234567" class="app-header__mobile-phone">
+          <a href="tel:+79991234567" class="mobile-menu__phone">
             <Phone :size="18" :stroke-width="1.5" />
-            <span>+7 (495) 123-45-67</span>
+            <span>+7 (999) 123-45-67</span>
           </a>
-          <RouterLink to="/masters" class="app-header__cta" @click="closeMobileMenu">Записаться</RouterLink>
+          <RouterLink to="/masters" class="btn btn-gold" @click="closeMobileMenu">Записаться</RouterLink>
         </nav>
       </div>
     </Transition>
@@ -68,143 +70,133 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
 </template>
 
 <style scoped>
-.app-header {
-  position: sticky;
+.header {
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 100;
-  transition: background-color 0.3s, backdrop-filter 0.3s;
+  padding: 24px 0;
+  transition: all var(--duration-smooth) var(--ease-out);
 }
 
-.app-header--scrolled {
-  background: var(--color-bg-glass);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--color-border);
+.header.header--scrolled {
+  padding: 16px 0;
+  background: var(--bg-glass);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.app-header__inner {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 1rem 2rem;
+.header__inner {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
 }
 
-.app-header__logo {
-  font-family: 'Kudry-WeirdDisplay', serif;
-  font-size: 1.5rem;
-  color: var(--color-accent-gold);
-  text-decoration: none;
+.header__logo span {
+  font-family: var(--font-brand);
+  font-size: 28px;
+  background: linear-gradient(135deg, #F5F0EB 0%, #C8A96E 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.app-header__nav {
+.header__nav {
   display: flex;
-  gap: 2rem;
+  gap: 32px;
 }
 
-.app-header__nav a {
-  font-family: 'Kudry-SansDisplay', sans-serif;
-  text-decoration: none;
-  color: var(--color-text-primary);
-  transition: color 0.2s;
+.header__nav a {
+  font-family: var(--font-nav);
+  font-size: 14px;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: color var(--duration-fast);
 }
 
-.app-header__nav a:hover,
-.app-header__nav a.router-link-active {
-  color: var(--color-accent-gold);
+.header__nav a:hover,
+.header__nav a.router-link-exact-active {
+  color: var(--accent-gold);
 }
 
-.app-header__actions {
+.header__actions {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 24px;
 }
 
-.app-header__phone {
+.header__phone {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-family: 'Kudry-SansText', sans-serif;
-  font-size: 0.875rem;
-  color: var(--color-text-secondary);
-  text-decoration: none;
-  transition: color 0.2s;
+  gap: 6px;
+  font-size: 15px;
+  font-family: var(--font-nav);
+  letter-spacing: 1px;
+  color: var(--text-primary);
+  transition: color var(--duration-fast);
 }
 
-.app-header__phone:hover {
-  color: var(--color-accent-gold);
+.header__phone:hover {
+  color: var(--accent-gold);
 }
 
-.app-header__cta {
-  font-family: 'Kudry-SansDisplay', sans-serif;
-  padding: 0.5rem 1.5rem;
-  border-radius: 999px;
-  background: var(--color-accent-gold);
-  color: var(--color-bg-primary);
-  text-decoration: none;
-  font-weight: 600;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.app-header__cta:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 20px rgba(200, 169, 110, 0.3);
-}
-
-.app-header__burger {
+.header__burger {
   display: none;
-  background: none;
-  border: none;
-  color: var(--color-text-primary);
+  color: var(--text-primary);
   cursor: pointer;
-  padding: 0.25rem;
-  transition: color 0.2s;
+  padding: 4px;
+  transition: color var(--duration-fast);
 }
 
-.app-header__burger:hover {
-  color: var(--color-accent-gold);
+.header__burger:hover {
+  color: var(--accent-gold);
 }
 
 /* Mobile overlay */
-.app-header__mobile-overlay {
+.mobile-menu {
   position: fixed;
   inset: 0;
   z-index: 99;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(12px);
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.app-header__mobile-nav {
+.mobile-menu__nav {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 2rem;
 }
 
-.app-header__mobile-nav a {
-  font-family: 'Kudry-SansDisplay', sans-serif;
+.mobile-menu__nav a {
+  font-family: var(--font-nav);
   font-size: 1.25rem;
-  text-decoration: none;
-  color: var(--color-text-primary);
-  transition: color 0.2s;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  transition: color var(--duration-fast);
 }
 
-.app-header__mobile-nav a:hover {
-  color: var(--color-accent-gold);
+.mobile-menu__nav a:hover {
+  color: var(--accent-gold);
 }
 
-.app-header__mobile-phone {
+.mobile-menu__phone {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-family: 'Kudry-SansText', sans-serif;
-  color: var(--color-text-secondary);
+  font-family: var(--font-body);
+  color: var(--text-secondary);
 }
 
-/* Mobile menu transition */
+/* Transitions */
 .mobile-menu-enter-active,
 .mobile-menu-leave-active {
   transition: opacity 0.3s ease;
@@ -216,12 +208,12 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
 }
 
 @media (max-width: 768px) {
-  .app-header__nav,
-  .app-header__actions {
+  .header__nav,
+  .header__actions {
     display: none;
   }
 
-  .app-header__burger {
+  .header__burger {
     display: block;
   }
 }
