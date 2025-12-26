@@ -11,7 +11,7 @@ class m251211_000006_create_users_table extends Migration
     {
         $this->createTable('{{%users}}', [
             'id' => $this->primaryKey()->unsigned(),
-            'email' => $this->string(255)->notNull()->unique(),
+            'email' => $this->string(191)->notNull()->unique(),
             'username' => $this->string(100)->notNull()->unique(),
             'password_hash' => $this->string(255)->notNull(),
             'auth_key' => $this->string(32)->notNull(),
@@ -24,7 +24,7 @@ class m251211_000006_create_users_table extends Migration
                 ->comment('0=deleted, 9=inactive, 10=active'),
             'created_at' => $this->timestamp()->notNull()->defaultExpression('CURRENT_TIMESTAMP'),
             'updated_at' => $this->timestamp()->notNull()->defaultExpression('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
-        ], 'ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci');
+        ], 'ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci');
 
         // Foreign key to masters (nullable)
         $this->addForeignKey(

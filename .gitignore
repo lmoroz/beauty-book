@@ -16,6 +16,7 @@ docker/redis/data/
 api/runtime/
 api/web/assets/
 api/vendor/
+api/config/*-local.php
 
 # Frontend
 frontend/node_modules/

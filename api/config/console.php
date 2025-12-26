@@ -1,8 +1,12 @@
 <?php
 
 $params = require __DIR__ . '/params.php';
-$db = require __DIR__ . '/db.php';
-$redis = require __DIR__ . '/redis.php';
+$db = file_exists(__DIR__ . '/db-local.php')
+    ? require __DIR__ . '/db-local.php'
+    : require __DIR__ . '/db.php';
+$redis = file_exists(__DIR__ . '/redis-local.php')
+    ? require __DIR__ . '/redis-local.php'
+    : require __DIR__ . '/redis.php';
 
 $config = [
     'id' => 'beautybook-console',

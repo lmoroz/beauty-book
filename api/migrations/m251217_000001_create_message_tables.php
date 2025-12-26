@@ -8,9 +8,9 @@ class m251217_000001_create_message_tables extends Migration
     {
         $this->createTable('{{%source_message}}', [
             'id' => $this->primaryKey(),
-            'category' => $this->string(255)->notNull()->defaultValue('app'),
+            'category' => $this->string(191)->notNull()->defaultValue('app'),
             'message' => $this->text()->notNull(),
-        ]);
+        ], 'ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci');
 
         $this->createIndex('idx-source_message-category', '{{%source_message}}', 'category');
 
@@ -18,7 +18,7 @@ class m251217_000001_create_message_tables extends Migration
             'id' => $this->integer()->notNull(),
             'language' => $this->string(16)->notNull(),
             'translation' => $this->text(),
-        ]);
+        ], 'ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci');
 
         $this->addPrimaryKey('pk-message', '{{%message}}', ['id', 'language']);
         $this->addForeignKey(
