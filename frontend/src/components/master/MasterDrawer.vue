@@ -1,6 +1,7 @@
 <script setup>
-import { computed, watch } from 'vue'
-import { X } from 'lucide-vue-next'
+import { ref, computed, watch } from 'vue'
+import { X, Loader2 } from 'lucide-vue-next'
+import { useMastersStore } from '../../stores/masters.js'
 
 const props = defineProps({
   master: { type: Object, default: null },
@@ -10,7 +11,47 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue', 'book'])
 
+const mastersStore = useMastersStore()
+const services = ref([])
+const slots = ref([])
+const loadingServices = ref(false)
+const loadingSlots = ref(false)
+
 const firstName = computed(() => props.master?.name?.split(' ')[0] || '')
+
+const initials = computed(() =>
+  (props.master?.name || '')
+    .split(' ')
+    .map(w => w[0])
+    .join('')
+    .toUpperCase()
+)
+
+const isApiMaster = computed(() =>
+  props.master && typeof props.master.id === 'number'
+)
+
+const displayServices = computed(() => {
+  if (props.master?.services?.length) return props.master.services
+  return services.value
+})
+
+const displaySlots = computed(() => {
+  if (props.master?.slots?.length) return props.master.slots
+  return slots.value
+})
+
+function formatDuration(svc) {
+  if (svc.duration) return svc.duration
+  if (svc.duration_min) {
+    const h = Math.floor(svc.duration_min / 60)
+    const m = svc.duration_min % 60
+    if (h && m) return `${h} ч ${m} мин`
+    if (h) return `${h} ч`
+    return `${m} мин`
+  }
+  return ''
+}
 
 function close() {
   emit('update:modelValue', false)
@@ -20,10 +61,48 @@ function onKeydown(e) {
   if (e.key === 'Escape' && props.modelValue) close()
 }
 
+async function loadApiData() {
+  if (!isApiMaster.value) return
+
+  loadingServices.value = true
+  try {
+    const data = await mastersStore.fetchMasterWithServices(props.master.id)
+    services.value = data?.activeServices || data?.services || []
+  } finally {
+    loadingServices.value = false
+  }
+
+  loadingSlots.value = true
+  try {
+    const today = new Date()
+    const grouped = []
+    const dayLabels = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
+    for (let d = 0; d < 3; d++) {
+      const date = new Date(today)
+      date.setDate(today.getDate() + d)
+      const dateStr = date.toISOString().slice(0, 10)
+      const fetched = await mastersStore.fetchSchedule(props.master.id, dateStr)
+      if (fetched.length) {
+        const label = d === 0 ? 'Сегодня:' : d === 1 ? 'Завтра:' : `${dayLabels[date.getDay()]}:`
+        grouped.push({
+          label,
+          times: fetched.slice(0, 5).map(s => s.start_time?.slice(0, 5)),
+        })
+      }
+    }
+    slots.value = grouped
+  } finally {
+    loadingSlots.value = false
+  }
+}
+
 watch(() => props.modelValue, (open) => {
   if (open) {
     document.body.style.overflow = 'hidden'
     document.addEventListener('keydown', onKeydown)
+    services.value = []
+    slots.value = []
+    loadApiData()
   } else {
     document.body.style.overflow = ''
     document.removeEventListener('keydown', onKeydown)
@@ -53,7 +132,10 @@ watch(() => props.modelValue, (open) => {
 
         <div class="drawer__scroll">
           <div class="drawer__hero">
-            <img :src="master.photo" :alt="master.name" class="drawer__hero-img">
+            <img v-if="master.photo" :src="master.photo" :alt="master.name" class="drawer__hero-img">
+            <div v-else class="drawer__hero-placeholder">
+              <span class="drawer__hero-initials">{{ initials }}</span>
+            </div>
           </div>
 
           <div class="drawer__content">
@@ -65,25 +147,33 @@ watch(() => props.modelValue, (open) => {
               <p class="drawer__bio">{{ master.fullBio || master.bio }}</p>
             </div>
 
-            <div v-if="master.services?.length" class="drawer__section">
+            <div v-if="displayServices.length || loadingServices" class="drawer__section">
               <h3 class="drawer__section-title">Услуги</h3>
-              <div class="drawer__services">
+              <div v-if="loadingServices" class="drawer__loading">
+                <Loader2 :size="18" :stroke-width="1.5" class="drawer__spinner" />
+                <span>Загрузка…</span>
+              </div>
+              <div v-else class="drawer__services">
                 <div
-                  v-for="svc in master.services"
-                  :key="svc.name"
+                  v-for="svc in displayServices"
+                  :key="svc.name || svc.id"
                   class="drawer-svc"
                 >
                   <span class="drawer-svc__name">{{ svc.name }}</span>
-                  <span class="drawer-svc__dur">{{ svc.duration }}</span>
+                  <span class="drawer-svc__dur">{{ formatDuration(svc) }}</span>
                 </div>
               </div>
             </div>
 
-            <div v-if="master.slots?.length" class="drawer__section">
+            <div v-if="displaySlots.length || loadingSlots" class="drawer__section">
               <h3 class="drawer__section-title">Ближайшие свободные записи</h3>
-              <div class="drawer__slots">
+              <div v-if="loadingSlots" class="drawer__loading">
+                <Loader2 :size="18" :stroke-width="1.5" class="drawer__spinner" />
+                <span>Загрузка…</span>
+              </div>
+              <div v-else class="drawer__slots">
                 <div
-                  v-for="group in master.slots"
+                  v-for="group in displaySlots"
                   :key="group.label"
                   class="drawer-slot-group"
                 >
@@ -184,6 +274,22 @@ watch(() => props.modelValue, (open) => {
   object-fit: cover;
 }
 
+.drawer__hero-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(200, 169, 110, 0.15), rgba(200, 169, 110, 0.05));
+}
+
+.drawer__hero-initials {
+  font-family: var(--font-brand);
+  font-size: 72px;
+  color: var(--accent-gold);
+  opacity: 0.6;
+}
+
 .drawer__content {
   padding: 1.75rem;
 }
@@ -222,6 +328,25 @@ watch(() => props.modelValue, (open) => {
   font-size: 15px;
   color: var(--text-secondary);
   line-height: 1.8;
+}
+
+.drawer__loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: 14px;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.drawer__spinner {
+  animation: spin 0.8s linear infinite;
 }
 
 .drawer-svc {
