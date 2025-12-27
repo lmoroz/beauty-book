@@ -21,6 +21,7 @@ function openDrawer(master) {
 
 function openBooking(master) {
   wizardMaster.value = master
+  drawerOpen.value = false
   wizardOpen.value = true
 }
 </script>

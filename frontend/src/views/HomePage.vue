@@ -2,11 +2,14 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import MasterCard from '../components/master/MasterCard.vue'
 import MasterDrawer from '../components/master/MasterDrawer.vue'
+import BookingWizard from '../components/booking/BookingWizard.vue'
 import heroUrl from '../assets/images/hero_bg.png'
 
 const selectedMaster = ref(null)
 const drawerOpen = ref(false)
 const drawerSide = ref('right')
+const wizardOpen = ref(false)
+const wizardMaster = ref(null)
 
 const masters = ref([
   {
@@ -97,6 +100,12 @@ function openDrawer(master, index) {
   drawerOpen.value = true
 }
 
+function openBooking(master) {
+  wizardMaster.value = master ? { ...master, id: typeof master.id === 'string' ? undefined : master.id } : null
+  drawerOpen.value = false
+  wizardOpen.value = true
+}
+
 function starsString(count) {
   return '★'.repeat(count) + '☆'.repeat(5 - count)
 }
@@ -164,7 +173,7 @@ onUnmounted(() => {
           :master="master"
           variant="featured"
           @click="openDrawer(master, i)"
-          @book="openDrawer(master, i)"
+          @book="openBooking(master)"
         />
       </div>
     </section>
@@ -195,6 +204,12 @@ onUnmounted(() => {
       v-model="drawerOpen"
       :master="selectedMaster"
       :side="drawerSide"
+      @book="openBooking"
+    />
+
+    <BookingWizard
+      v-model="wizardOpen"
+      :preselected-master="wizardMaster"
     />
   </main>
 </template>

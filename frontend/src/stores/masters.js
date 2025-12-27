@@ -34,5 +34,37 @@ export const useMastersStore = defineStore('masters', () => {
     }
   }
 
-  return { masters, loading, error, fetchMasters, fetchMaster }
+  async function fetchMasterWithServices(id) {
+    try {
+      const { data } = await api.get(`/masters/${id}`, {
+        params: { expand: 'activeServices' },
+      })
+      return data
+    } catch (e) {
+      error.value = e.message
+      return null
+    }
+  }
+
+  async function fetchSchedule(masterId, date) {
+    try {
+      const { data } = await api.get(`/masters/${masterId}/schedule`, {
+        params: { date },
+      })
+      return data.slots || []
+    } catch (e) {
+      error.value = e.message
+      return []
+    }
+  }
+
+  return {
+    masters,
+    loading,
+    error,
+    fetchMasters,
+    fetchMaster,
+    fetchMasterWithServices,
+    fetchSchedule,
+  }
 })

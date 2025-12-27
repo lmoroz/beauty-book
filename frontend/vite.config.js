@@ -6,9 +6,15 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 3000,
-    strictPort: true,
     hmr: {
       clientPort: 8080,
+    },
+    proxy: {
+      '/api': {
+        target: 'https://beautybook.ubiz.ru',
+        changeOrigin: true,
+        secure: false,
+      },
     },
   },
 })
