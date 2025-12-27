@@ -25,6 +25,7 @@ const routes = [
     path: '/master/login',
     name: 'master-login',
     component: () => import('../views/master/MasterLoginPage.vue'),
+    meta: { guestOnly: true },
   },
   {
     path: '/master/dashboard',
@@ -66,10 +67,15 @@ const router = createRouter({
   },
 })
 
-router.beforeEach((to) => {
-  if (to.meta.requiresAuth) {
-    const token = localStorage.getItem('master_token')
-    if (!token) return { name: 'master-login' }
+router.beforeEach(async (to) => {
+  const token = localStorage.getItem('master_token')
+
+  if (to.meta.requiresAuth && !token) {
+    return { name: 'master-login' }
+  }
+
+  if (to.meta.guestOnly && token) {
+    return { name: 'master-schedule' }
   }
 })
 

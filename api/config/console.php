@@ -42,6 +42,10 @@ $config = [
         'db' => $db,
         'i18n' => [
             'translations' => [
+                'app' => [
+                    'class' => 'yii\i18n\DbMessageSource',
+                    'sourceLanguage' => 'en-US',
+                ],
                 'booking' => [
                     'class' => 'yii\i18n\DbMessageSource',
                     'sourceLanguage' => 'en-US',

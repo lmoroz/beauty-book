@@ -49,7 +49,9 @@ $config = [
         ],
         'user' => [
             'identityClass' => 'app\models\User',
-            'enableAutoLogin' => true,
+            'enableAutoLogin' => false,
+            'enableSession' => false,
+            'loginUrl' => null,
         ],
         'errorHandler' => [
             'errorAction' => 'site/error',
@@ -71,6 +73,10 @@ $config = [
         'db' => $db,
         'i18n' => [
             'translations' => [
+                'app' => [
+                    'class' => 'yii\i18n\DbMessageSource',
+                    'sourceLanguage' => 'en-US',
+                ],
                 'booking' => [
                     'class' => 'yii\i18n\DbMessageSource',
                     'sourceLanguage' => 'en-US',
@@ -86,6 +92,9 @@ $config = [
             'enableStrictParsing' => false,
             'showScriptName' => false,
             'rules' => [
+                'POST api/v1/auth/login' => 'api/v1/auth/login',
+                'GET api/v1/auth/me' => 'api/v1/auth/me',
+
                 'PATCH api/v1/bookings/<id:\d+>/cancel' => 'api/v1/booking/cancel',
                 'GET api/v1/masters/<id:\d+>/schedule' => 'api/v1/master/schedule',
                 'GET api/v1/masters/<id:\d+>/schedule/events' => 'api/v1/schedule-event/stream',
