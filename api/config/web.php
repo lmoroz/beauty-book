@@ -49,9 +49,8 @@ $config = [
         ],
         'user' => [
             'identityClass' => 'app\models\User',
-            'enableAutoLogin' => false,
-            'enableSession' => false,
-            'loginUrl' => null,
+            'enableAutoLogin' => true,
+            'loginUrl' => ['admin/default/login'],
         ],
         'errorHandler' => [
             'errorAction' => 'site/error',
@@ -103,6 +102,11 @@ $config = [
                 ['class' => 'yii\rest\UrlRule', 'controller' => 'api/v1/service', 'pluralize' => true],
                 ['class' => 'yii\rest\UrlRule', 'controller' => 'api/v1/booking', 'pluralize' => true],
             ],
+        ],
+    ],
+    'modules' => [
+        'admin' => [
+            'class' => 'app\modules\admin\Module',
         ],
     ],
     'params' => $params,
