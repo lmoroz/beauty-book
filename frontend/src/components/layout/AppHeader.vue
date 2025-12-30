@@ -40,7 +40,7 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
           <Phone :size="16" :stroke-width="1.5" />
           <span>+7 (999) 123-45-67</span>
         </a>
-        <RouterLink to="/masters" class="btn btn-gold">Записаться</RouterLink>
+        <RouterLink :to="{ path: '/masters', query: { book: '1' } }" class="btn btn-gold">Записаться</RouterLink>
       </div>
 
       <button
@@ -62,7 +62,7 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
             <Phone :size="18" :stroke-width="1.5" />
             <span>+7 (999) 123-45-67</span>
           </a>
-          <RouterLink to="/masters" class="btn btn-gold" @click="closeMobileMenu">Записаться</RouterLink>
+          <RouterLink :to="{ path: '/masters', query: { book: '1' } }" class="btn btn-gold" @click="closeMobileMenu">Записаться</RouterLink>
         </nav>
       </div>
     </Transition>

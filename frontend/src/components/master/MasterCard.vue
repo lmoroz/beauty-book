@@ -22,10 +22,10 @@ defineEmits(['click', 'book'])
         <h3 class="staggered-card__name">{{ master.name }}</h3>
         <div class="staggered-card__spec">
           <span
-            v-for="tag in master.tags"
-            :key="tag"
+            v-for="spec in master.specializations"
+            :key="spec.id"
             class="pill pill-outline"
-          >{{ tag }}</span>
+          >{{ spec.name }}</span>
         </div>
       </div>
       <p class="staggered-card__bio">{{ master.bio }}</p>
@@ -44,15 +44,18 @@ defineEmits(['click', 'book'])
     class="master-card"
     @click="$emit('click', master)"
   >
-    <img :src="master.photo" :alt="master.name" class="master-card__img">
+    <div class="master-card__img-wrapper">
+      <img :src="master.photo" :alt="master.name" class="master-card__img">
+    </div>
+
     <div class="master-card__body">
       <h3 class="master-card__title">{{ master.name }}</h3>
       <div class="master-card__tags">
         <span
-          v-for="tag in master.tags"
-          :key="tag"
+          v-for="spec in master.specializations"
+          :key="spec.id"
           class="pill pill-outline"
-        >{{ tag }}</span>
+        >{{ spec.name }}</span>
       </div>
       <p class="master-card__bio">{{ master.shortBio || master.bio }}</p>
       <ul class="master-card__services">
@@ -191,13 +194,19 @@ defineEmits(['click', 'book'])
   font-size: 13px;
 }
 
-/* ═══ Grid Card (Catalog) ═══ */
+/* ═══ Grid Card (Catalog — Masonry) ═══ */
 .master-card {
-  border-radius: 16px;
+  display: inline-block;
+  width: 100%;
+  border-radius: 20px;
   overflow: hidden;
   position: relative;
-  background: var(--bg-secondary);
+  background: var(--bg-glass);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
   border: 1px solid var(--border-subtle);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   transition: all var(--duration-smooth) var(--ease-out);
   cursor: pointer;
 }
@@ -205,28 +214,35 @@ defineEmits(['click', 'book'])
 .master-card:hover {
   transform: translateY(-6px);
   border-color: var(--border-gold-hover);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--border-gold-hover);
+}
+
+.master-card__img-wrapper {
+  overflow: hidden;
+  line-height: 0;
 }
 
 .master-card__img {
   width: 100%;
-  height: 350px;
+  aspect-ratio: 3 / 4;
   object-fit: cover;
-  transition: transform var(--duration-slow);
+  object-position: top;
+  transition: transform var(--duration-slow) var(--ease-out);
 }
 
 .master-card:hover .master-card__img {
-  transform: scale(1.03);
+  transform: scale(1.04);
 }
 
 .master-card__body {
-  padding: 24px;
+  padding: 20px 22px 24px;
 }
 
 .master-card__title {
   font-family: var(--font-heading);
-  font-size: 24px;
+  font-size: 22px;
   margin-bottom: 8px;
+  line-height: 1.2;
 }
 
 .master-card__tags {
@@ -240,10 +256,10 @@ defineEmits(['click', 'book'])
   color: var(--text-secondary);
   font-family: var(--font-bio);
   font-size: 14px;
-  line-height: 1.5;
-  margin-bottom: 12px;
+  line-height: 1.55;
+  margin-bottom: 14px;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -251,7 +267,7 @@ defineEmits(['click', 'book'])
 .master-card__services {
   list-style: none;
   padding: 0;
-  margin: 0 0 16px 0;
+  margin: 0 0 18px 0;
 }
 
 .master-card__services li {
@@ -259,7 +275,8 @@ defineEmits(['click', 'book'])
   position: relative;
   margin-bottom: 4px;
   color: var(--text-primary);
-  font-size: 14px;
+  font-size: 13px;
+  font-family: var(--font-caption);
 }
 
 .master-card__services li::before {
@@ -268,7 +285,13 @@ defineEmits(['click', 'book'])
   left: 0;
   top: 1px;
   color: var(--accent-gold);
-  font-size: 12px;
+  font-size: 11px;
+}
+
+.master-card__body .btn {
+  width: 100%;
+  padding: 11px 20px;
+  font-size: 13px;
 }
 
 /* ═══ Responsive ═══ */

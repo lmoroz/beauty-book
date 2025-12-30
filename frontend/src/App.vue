@@ -7,7 +7,7 @@ import ChatWidget from './components/chat/ChatWidget.vue'
 
 const route = useRoute()
 
-const isMasterArea = computed(() => route.path.startsWith('/master'))
+const isMasterArea = computed(() => route.path === '/master' || route.path.startsWith('/master/'))
 const showChat = computed(() => !isMasterArea.value)
 const showHeaderFooter = computed(() => !isMasterArea.value)
 </script>

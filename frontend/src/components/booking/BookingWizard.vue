@@ -322,7 +322,11 @@ async function submitBooking() {
                     </div>
                     <div class="bw__master-info">
                       <strong>{{ m.name }}</strong>
-                      <span class="pill pill-gold">{{ m.specialization }}</span>
+                      <span
+                        v-for="spec in m.specializations"
+                        :key="spec.id"
+                        class="pill pill-gold"
+                      >{{ spec.name }}</span>
                     </div>
                   </button>
                 </div>
