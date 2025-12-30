@@ -15,7 +15,9 @@ class MasterController extends Controller
 {
     public function actionIndex(): string
     {
-        $query = Master::find()->orderBy(['sort_order' => SORT_ASC]);
+        $query = Master::find()
+            ->with(['specializations'])
+            ->orderBy(['sort_order' => SORT_ASC]);
 
         $status = Yii::$app->request->get('status');
         if ($status) {
@@ -38,14 +40,19 @@ class MasterController extends Controller
         return $this->render('view', ['model' => $this->findModel($id)]);
     }
 
-    public function actionCreate(): string|\yii\web\Response
+    /**
+     * @return string|\yii\web\Response
+     */
+    public function actionCreate()
     {
         $model = new Master();
 
         if ($model->load(Yii::$app->request->post())) {
             $this->prepareModel($model);
             $this->handlePhotoUpload($model);
+            $model->specialization_ids = Yii::$app->request->post('specialization_ids', []);
             if ($model->save()) {
+                $model->saveSpecializations();
                 Yii::$app->session->setFlash('success', 'Мастер создан.');
                 return $this->redirect(['view', 'id' => $model->id]);
             }
@@ -54,14 +61,19 @@ class MasterController extends Controller
         return $this->render('create', ['model' => $model]);
     }
 
-    public function actionUpdate(int $id): string|\yii\web\Response
+    /**
+     * @return string|\yii\web\Response
+     */
+    public function actionUpdate(int $id)
     {
         $model = $this->findModel($id);
 
         if ($model->load(Yii::$app->request->post())) {
             $this->prepareModel($model);
             $this->handlePhotoUpload($model);
+            $model->specialization_ids = Yii::$app->request->post('specialization_ids', []);
             if ($model->save()) {
+                $model->saveSpecializations();
                 Yii::$app->session->setFlash('success', 'Мастер обновлён.');
                 return $this->redirect(['view', 'id' => $model->id]);
             }
@@ -116,7 +128,7 @@ class MasterController extends Controller
 
     private function findModel(int $id): Master
     {
-        $model = Master::findOne($id);
+        $model = Master::find()->with(['specializations'])->where(['id' => $id])->one();
         if (!$model) {
             throw new NotFoundHttpException('Master not found.');
         }

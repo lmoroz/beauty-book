@@ -175,7 +175,7 @@ cd beautybook
 docker compose up -d --build
 
 # Выполнить миграции
-docker compose exec php-fpm php yii migrate --interactive=0
+docker compose exec php php yii migrate --interactive=0
 
 # Приложение доступно:
 # - Фронтенд:  http://localhost:3000
@@ -193,13 +193,13 @@ docker compose down
 ### Сброс базы данных
 
 ```bash
-docker compose exec php-fpm php yii migrate/redo --interactive=0
+docker compose exec php php yii migrate/redo --interactive=0
 ```
 
 ### Запуск воркера уведомлений
 
 ```bash
-docker compose exec php-fpm php yii queue/listen
+docker compose exec php php yii queue/listen
 ```
 
 ## Схема базы данных
@@ -230,7 +230,7 @@ services   1 ──< N  bookings
 
 ```bash
 # Зайти в PHP-контейнер
-docker compose exec php-fpm bash
+docker compose exec php bash
 
 # Выполнить миграции
 php yii migrate

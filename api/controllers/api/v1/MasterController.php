@@ -37,7 +37,7 @@ class MasterController extends ActiveController
 
         $actions['index']['prepareDataProvider'] = function () {
             $query = $this->modelClass::find()
-                ->with(['activeServices'])
+                ->with(['activeServices', 'specializations'])
                 ->orderBy(['sort_order' => SORT_ASC, 'name' => SORT_ASC]);
 
             $salonId = \Yii::$app->request->get('salon_id');

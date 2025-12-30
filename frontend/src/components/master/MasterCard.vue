@@ -33,7 +33,7 @@ defineEmits(['click', 'book'])
         <li v-for="svc in master.topServices" :key="svc">{{ svc }}</li>
       </ul>
       <button class="btn btn-outline" @click.stop="$emit('book', master)">
-        Записаться к {{ master.name.split(' ')[0] }}
+        Записаться
       </button>
     </div>
   </article>

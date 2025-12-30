@@ -31,7 +31,10 @@ class ServiceController extends Controller
         ]);
     }
 
-    public function actionCreate(): string|\yii\web\Response
+    /**
+     * @return string|\yii\web\Response
+     */
+    public function actionCreate()
     {
         $model = new Service();
 
@@ -45,7 +48,10 @@ class ServiceController extends Controller
         return $this->render('create', ['model' => $model]);
     }
 
-    public function actionUpdate(int $id): string|\yii\web\Response
+    /**
+     * @return string|\yii\web\Response
+     */
+    public function actionUpdate(int $id)
     {
         $model = $this->findModel($id);
 

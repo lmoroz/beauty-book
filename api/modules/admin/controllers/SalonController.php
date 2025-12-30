@@ -11,7 +11,10 @@ use yii\web\NotFoundHttpException;
 
 class SalonController extends Controller
 {
-    public function actionUpdate(): string|\yii\web\Response
+    /**
+     * @return string|\yii\web\Response
+     */
+    public function actionUpdate()
     {
         $model = Salon::find()->one();
 

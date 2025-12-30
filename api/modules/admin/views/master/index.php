@@ -31,7 +31,10 @@ $this->title = 'Мастера';
         <tr>
             <td><?= $master->id ?></td>
             <td><strong><?= Html::encode($master->name) ?></strong></td>
-            <td><?= Html::encode($master->specialization) ?></td>
+            <td><?php
+                $specs = $master->specializations;
+                echo $specs ? implode(', ', array_map(function($s) { return Html::encode($s->name); }, $specs)) : '—';
+            ?></td>
             <td><?= Html::encode($master->phone) ?></td>
             <td>
                 <?php if ($master->status === 'active'): ?>

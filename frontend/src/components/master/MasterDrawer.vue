@@ -191,7 +191,7 @@ watch(() => props.modelValue, (open) => {
 
         <div class="drawer__cta-bar">
           <button class="drawer__cta" @click="$emit('book', master)">
-            Записаться к {{ firstName }}
+            Записаться
           </button>
         </div>
       </aside>

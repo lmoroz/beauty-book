@@ -3,7 +3,10 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import MasterCard from '../components/master/MasterCard.vue'
 import MasterDrawer from '../components/master/MasterDrawer.vue'
 import BookingWizard from '../components/booking/BookingWizard.vue'
+import { useMastersStore } from '../stores/masters.js'
 import heroUrl from '../assets/images/hero_bg.png'
+
+const mastersStore = useMastersStore()
 
 const selectedMaster = ref(null)
 const drawerOpen = ref(false)
@@ -11,81 +14,33 @@ const drawerSide = ref('right')
 const wizardOpen = ref(false)
 const wizardMaster = ref(null)
 
-const masters = ref([
-  {
-    id: 'anna',
-    name: 'Анна Петрова',
-    specialization: 'Топ-стилист · Колорист',
-    tags: ['Топ-стилист'],
-    bio: 'Эксперт по сложным окрашиваниям и модельным стрижкам. Более 10 лет опыта работы в индустрии красоты премиум-сегмента.',
-    fullBio: 'Эксперт по сложным окрашиваниям и модельным стрижкам. Более 10 лет опыта работы в индустрии красоты премиум-сегмента. Работает с брендами Wella, Schwarzkopf, Olaplex. Постоянно совершенствует навыки на международных мастер-классах.',
-    photo: new URL('../assets/images/master_1.png', import.meta.url).href,
-    topServices: [
-      'Сложное окрашивание (Airtouch, Balayage)',
-      'Стрижка женская премиум',
-      'Уход «Абсолютное счастье для волос»',
-    ],
-    services: [
-      { name: 'Сложное окрашивание (Airtouch)', duration: '3 ч' },
-      { name: 'Balayage + тонирование', duration: '2.5 ч' },
-      { name: 'Стрижка женская премиум', duration: '1.5 ч' },
-      { name: 'Уход «Абсолютное счастье для волос»', duration: '1 ч' },
-    ],
-    slots: [
-      { label: 'Сегодня:', times: ['15:00', '17:00'] },
-      { label: 'Завтра:', times: ['09:00', '11:00', '14:00'] },
-      { label: 'Пятница:', times: ['10:00', '13:00', '16:00'] },
-    ],
-  },
-  {
-    id: 'ekaterina',
-    name: 'Екатерина Смирнова',
-    specialization: 'Визажист · Бровист',
-    tags: ['Визажист', 'Бровист'],
-    bio: 'Создает безупречные образы для особых случаев. Подчеркивает естественную красоту с помощью премиальной косметики Tom Ford, Charlotte Tilbury.',
-    fullBio: 'Создает безупречные образы для особых случаев. Подчеркивает естественную красоту с помощью премиальной косметики Tom Ford, Charlotte Tilbury. 8 лет опыта, более 500 довольных клиентов.',
-    photo: new URL('../assets/images/master_2.png', import.meta.url).href,
-    topServices: [
-      'Вечерний макияж',
-      'Архитектура и окрашивание бровей',
-      'Свадебный образ',
-    ],
-    services: [
-      { name: 'Вечерний макияж', duration: '1.5 ч' },
-      { name: 'Свадебный образ + репетиция', duration: '2 ч' },
-      { name: 'Архитектура и окрашивание бровей', duration: '1 ч' },
-      { name: 'Дневной макияж (clean girl)', duration: '1 ч' },
-    ],
-    slots: [
-      { label: 'Завтра:', times: ['10:00', '14:00'] },
-      { label: 'Суббота:', times: ['09:00', '11:00', '15:00'] },
-    ],
-  },
-  {
-    id: 'maria',
-    name: 'Мария Иванова',
-    specialization: 'Мастер ногтевого сервиса',
-    tags: ['Мастер ногтевого сервиса'],
-    bio: 'Идеальный маникюр с архитектурой формы. Работает с премиальными материалами Luxio, Kinetics. Соблюдение всех стандартов стерилизации.',
-    fullBio: 'Идеальный маникюр с архитектурой формы. Работает с премиальными материалами Luxio, Kinetics. Соблюдение всех стандартов стерилизации. 6 лет опыта и более 1200 довольных клиентов.',
-    photo: new URL('../assets/images/master_3.png', import.meta.url).href,
-    topServices: [
-      'Аппаратный маникюр + покрытие Luxio',
-      'Smart-педикюр премиум',
-      'SPA-уход для рук',
-    ],
-    services: [
-      { name: 'Аппаратный маникюр + покрытие Luxio', duration: '1.5 ч' },
-      { name: 'Smart-педикюр премиум', duration: '1.5 ч' },
-      { name: 'SPA-уход для рук', duration: '45 мин' },
-      { name: 'Nail art дизайн', duration: '2 ч' },
-    ],
-    slots: [
-      { label: 'Сегодня:', times: ['16:00', '18:00'] },
-      { label: 'Завтра:', times: ['09:00', '12:00', '15:00', '17:00'] },
-    ],
-  },
-])
+const apiUrl = import.meta.env.VITE_API_URL || ''
+const API_BASE = apiUrl && apiUrl.startsWith('http')
+  ? apiUrl.replace(/\/api\/v1\/?$/, '')
+  : ''
+
+const masters = ref([])
+
+function resolvePhoto(photo) {
+  if (!photo) return null
+  if (photo.startsWith('http')) return photo
+  return API_BASE + photo
+}
+
+function transformMaster(m) {
+  return {
+    ...m,
+    photo: resolvePhoto(m.photo),
+    tags: (m.specializations || []).map(s => s.name),
+    specialization: (m.specializations || []).map(s => s.name).join(' · '),
+    topServices: m.topServices || [],
+  }
+}
+
+async function loadMasters() {
+  await mastersStore.fetchMasters()
+  masters.value = mastersStore.masters.map(transformMaster)
+}
 
 const reviews = [
   { name: 'Дарья', stars: 5, text: '«Делала окрашивание у Анны. Цвет получился идеальным, волосы живые и блестящие. Сервис на высшем уровне!»', date: '12 октября' },
@@ -127,6 +82,7 @@ onMounted(() => {
   document.body.style.setProperty('--scroll-y', window.scrollY + 'px')
   document.body.style.setProperty('--scroll-progress', Math.min(window.scrollY / 800, 1))
   window.addEventListener('scroll', handleScroll, { passive: true })
+  loadMasters()
 })
 
 onUnmounted(() => {
@@ -166,7 +122,11 @@ onUnmounted(() => {
         </p>
       </div>
 
-      <div class="featured-masters">
+      <div v-if="mastersStore.loading" class="featured-masters" style="text-align: center; padding: 60px 0;">
+        <p class="text-secondary">Загрузка мастеров…</p>
+      </div>
+
+      <div v-else class="featured-masters">
         <MasterCard
           v-for="(master, i) in masters"
           :key="master.id"

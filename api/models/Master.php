@@ -5,13 +5,10 @@ namespace app\models;
 use yii\db\ActiveRecord;
 
 /**
- * Master model — an independent specialist who rents a workstation.
- *
  * @property int $id
  * @property int $salon_id
  * @property string $name
  * @property string $slug
- * @property string|null $specialization
  * @property string|null $bio
  * @property string|null $photo
  * @property string|null $phone
@@ -22,11 +19,15 @@ use yii\db\ActiveRecord;
  * @property string $updated_at
  *
  * @property Salon $salon
+ * @property Specialization[] $specializations
  * @property Service[] $services
  * @property TimeSlot[] $timeSlots
  */
 class Master extends ActiveRecord
 {
+    /** @var int[] */
+    public $specialization_ids = [];
+
     public static function tableName(): string
     {
         return '{{%masters}}';
@@ -41,7 +42,6 @@ class Master extends ActiveRecord
             [['slug'], 'string', 'max' => 255],
             [['slug'], 'match', 'pattern' => '/^[a-z0-9\-]+$/'],
             [['slug'], 'unique', 'targetAttribute' => ['salon_id', 'slug']],
-            [['specialization'], 'string', 'max' => 255],
             [['bio'], 'string'],
             [['photo'], 'string', 'max' => 500],
             [['phone'], 'string', 'max' => 20],
@@ -50,6 +50,7 @@ class Master extends ActiveRecord
             [['status'], 'default', 'value' => 'active'],
             [['sort_order'], 'default', 'value' => 0],
             [['salon_id'], 'exist', 'targetClass' => Salon::class, 'targetAttribute' => 'id'],
+            [['specialization_ids'], 'each', 'rule' => ['integer']],
         ];
     }
 
@@ -60,7 +61,17 @@ class Master extends ActiveRecord
             'salon_id',
             'name',
             'slug',
-            'specialization',
+            'specializations' => function () {
+                return array_map(function (Specialization $s) {
+                    return ['id' => $s->id, 'name' => $s->name, 'slug' => $s->slug];
+                }, $this->specializations);
+            },
+            'topServices' => function () {
+                $services = $this->getActiveServices()->limit(3)->all();
+                return array_map(function (Service $s) {
+                    return $s->name;
+                }, $services);
+            },
             'bio',
             'photo',
             'phone',
@@ -73,9 +84,21 @@ class Master extends ActiveRecord
         return ['salon', 'services', 'activeServices'];
     }
 
+    public function afterFind(): void
+    {
+        parent::afterFind();
+        $this->specialization_ids = array_map('intval', array_column($this->specializations, 'id'));
+    }
+
     public function getSalon(): \yii\db\ActiveQuery
     {
         return $this->hasOne(Salon::class, ['id' => 'salon_id']);
+    }
+
+    public function getSpecializations(): \yii\db\ActiveQuery
+    {
+        return $this->hasMany(Specialization::class, ['id' => 'specialization_id'])
+            ->viaTable('{{%master_specializations}}', ['master_id' => 'id']);
     }
 
     public function getServices(): \yii\db\ActiveQuery
@@ -93,5 +116,23 @@ class Master extends ActiveRecord
     public function getTimeSlots(): \yii\db\ActiveQuery
     {
         return $this->hasMany(TimeSlot::class, ['master_id' => 'id']);
+    }
+
+    public function saveSpecializations(): void
+    {
+        $db = static::getDb();
+        $table = '{{%master_specializations}}';
+
+        $db->createCommand()->delete($table, ['master_id' => $this->id])->execute();
+
+        $ids = array_filter(array_unique(array_map('intval', $this->specialization_ids)));
+        $rows = [];
+        foreach ($ids as $specId) {
+            $rows[] = [$this->id, $specId];
+        }
+
+        if ($rows) {
+            $db->createCommand()->batchInsert($table, ['master_id', 'specialization_id'], $rows)->execute();
+        }
     }
 }

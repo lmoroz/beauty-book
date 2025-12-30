@@ -2,10 +2,13 @@
 
 /** @var app\models\Master $model */
 
+use app\models\Specialization;
 use yii\helpers\Html;
 use yii\helpers\Url;
 
 $isNew = $model->isNewRecord;
+$specializations = Specialization::find()->orderBy(['sort_order' => SORT_ASC])->all();
+$selectedIds = $model->specialization_ids ?: [];
 ?>
 
 <form method="post" enctype="multipart/form-data">
@@ -37,14 +40,20 @@ $isNew = $model->isNewRecord;
         </div>
 
         <div class="form-group">
-            <label for="f-spec">Специализация *</label>
-            <select id="f-spec" name="Master[specialization]">
-                <?php foreach (['hairdresser', 'manicurist', 'cosmetologist', 'massage', 'stylist', 'other'] as $spec): ?>
-                    <option value="<?= $spec ?>" <?= $model->specialization === $spec ? 'selected' : '' ?>>
-                        <?= ucfirst($spec) ?>
-                    </option>
+            <label>Специализации</label>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px;">
+                <?php foreach ($specializations as $spec): ?>
+                    <label style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; background: #f3f3f3; border-radius: 6px; cursor: pointer; font-size: 14px; user-select: none;">
+                        <input type="checkbox" name="specialization_ids[]" value="<?= $spec->id ?>"
+                            <?= in_array($spec->id, $selectedIds) ? 'checked' : '' ?>
+                               style="accent-color: #c8a96e;">
+                        <?= Html::encode($spec->name) ?>
+                    </label>
                 <?php endforeach; ?>
-            </select>
+            </div>
+            <?php if (empty($specializations)): ?>
+                <small style="color: #999;">Нет доступных специализаций. <a href="<?= Url::to(['/admin/specialization/create']) ?>">Создать</a></small>
+            <?php endif; ?>
         </div>
 
         <div class="form-group">

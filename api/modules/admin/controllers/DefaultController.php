@@ -32,7 +32,10 @@ class DefaultController extends Controller
         ]);
     }
 
-    public function actionLogin(): string|\yii\web\Response
+    /**
+     * @return string|\yii\web\Response
+     */
+    public function actionLogin()
     {
         if (!Yii::$app->user->isGuest) {
             return $this->redirect(['index']);
