@@ -36,6 +36,32 @@ const displayServices = computed(() => {
   return services.value
 })
 
+const groupedServices = computed(() => {
+  const items = displayServices.value
+  if (!items.length) return []
+
+  const groups = new Map()
+  const uncategorized = []
+
+  for (const svc of items) {
+    const cat = svc.category
+    if (cat && cat.name) {
+      if (!groups.has(cat.slug)) {
+        groups.set(cat.slug, { name: cat.name, slug: cat.slug, items: [] })
+      }
+      groups.get(cat.slug).items.push(svc)
+    } else {
+      uncategorized.push(svc)
+    }
+  }
+
+  const result = [...groups.values()]
+  if (uncategorized.length) {
+    result.push({ name: 'Другие', slug: '_other', items: uncategorized })
+  }
+  return result
+})
+
 const displaySlots = computed(() => {
   if (props.master?.slots?.length) return props.master.slots
   return slots.value
@@ -152,6 +178,23 @@ watch(() => props.modelValue, (open) => {
               <div v-if="loadingServices" class="drawer__loading">
                 <Loader2 :size="18" :stroke-width="1.5" class="drawer__spinner" />
                 <span>Загрузка…</span>
+              </div>
+              <div v-else-if="groupedServices.length" class="drawer__services">
+                <div
+                  v-for="group in groupedServices"
+                  :key="group.slug"
+                  class="drawer-svc-group"
+                >
+                  <div class="drawer-svc-group__label">{{ group.name }}</div>
+                  <div
+                    v-for="svc in group.items"
+                    :key="svc.name || svc.id"
+                    class="drawer-svc"
+                  >
+                    <span class="drawer-svc__name">{{ svc.name }}</span>
+                    <span class="drawer-svc__dur">{{ formatDuration(svc) }}</span>
+                  </div>
+                </div>
               </div>
               <div v-else class="drawer__services">
                 <div
@@ -367,6 +410,20 @@ watch(() => props.modelValue, (open) => {
 .drawer-svc__name {
   font-family: var(--font-body);
   font-size: 15px;
+}
+
+.drawer-svc-group {
+  margin-bottom: 1rem;
+}
+
+.drawer-svc-group__label {
+  font-family: var(--font-caption);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent-gold);
+  padding: 0.5rem 0.5rem 0.25rem;
+  opacity: 0.8;
 }
 
 .drawer-svc__dur {

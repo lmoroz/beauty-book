@@ -28,7 +28,7 @@ $this->title = 'Услуги';
             <td><?= $s->id ?></td>
             <td><?= Html::encode($s->master->name ?? '—') ?></td>
             <td><strong><?= Html::encode($s->name) ?></strong></td>
-            <td><?= Html::encode($s->category) ?></td>
+            <td><?= Html::encode($s->category->name ?? '—') ?></td>
             <td><?= $s->duration_min ?> мин</td>
             <td><?= number_format($s->price, 0, '.', ' ') ?></td>
             <td>

@@ -273,6 +273,7 @@ $user = Yii::$app->user->identity;
         ['label' => 'Дашборд', 'url' => '/admin/default/index', 'id' => 'default'],
         ['label' => 'Мастера', 'url' => '/admin/master/index', 'id' => 'master'],
         ['label' => 'Специализации', 'url' => '/admin/specialization/index', 'id' => 'specialization'],
+        ['label' => 'Категории услуг', 'url' => '/admin/service-category/index', 'id' => 'service-category'],
         ['label' => 'Услуги', 'url' => '/admin/service/index', 'id' => 'service'],
         ['label' => 'Бронирования', 'url' => '/admin/booking/index', 'id' => 'booking'],
         ['label' => 'Салон', 'url' => '/admin/salon/update', 'id' => 'salon'],

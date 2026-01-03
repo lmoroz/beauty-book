@@ -5,10 +5,18 @@ use yii\helpers\Url;
 
 $isNew = $model->isNewRecord;
 $masters = \app\models\Master::find()->select(['id', 'name'])->orderBy('name')->all();
+$categories = \app\models\ServiceCategory::find()->orderBy(['sort_order' => SORT_ASC])->all();
 ?>
 <form method="post">
     <input type="hidden" name="<?= Yii::$app->request->csrfParam ?>" value="<?= Yii::$app->request->csrfToken ?>">
     <div class="card" style="max-width: 500px;">
+        <?php if ($model->hasErrors()): ?>
+            <div class="flash-error" style="margin-bottom:16px;">
+                <?php foreach ($model->getFirstErrors() as $err): ?>
+                    <div><?= Html::encode($err) ?></div>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
         <div class="form-group">
             <label for="f-master">Мастер *</label>
             <select id="f-master" name="Service[master_id]" required>
@@ -26,8 +34,14 @@ $masters = \app\models\Master::find()->select(['id', 'name'])->orderBy('name')->
         </div>
         <div class="form-group">
             <label for="f-cat">Категория</label>
-            <input id="f-cat" type="text" name="Service[category]" value="<?= Html::encode($model->category) ?>"
-                   placeholder="haircut, nails, skincare...">
+            <select id="f-cat" name="Service[category_id]">
+                <option value="">— Без категории —</option>
+                <?php foreach ($categories as $cat): ?>
+                    <option value="<?= $cat->id ?>" <?= $model->category_id == $cat->id ? 'selected' : '' ?>>
+                        <?= Html::encode($cat->name) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
         </div>
         <div class="form-group">
             <label for="f-dur">Длительность (мин) *</label>

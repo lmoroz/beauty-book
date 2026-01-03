@@ -11,7 +11,7 @@ use yii\db\ActiveRecord;
  * @property int $master_id
  * @property string $name
  * @property string|null $description
- * @property string|null $category
+ * @property int|null $category_id
  * @property int $duration_min
  * @property float $price
  * @property bool $is_active
@@ -20,6 +20,7 @@ use yii\db\ActiveRecord;
  * @property string $updated_at
  *
  * @property Master $master
+ * @property ServiceCategory|null $category
  */
 class Service extends ActiveRecord
 {
@@ -32,16 +33,16 @@ class Service extends ActiveRecord
     {
         return [
             [['master_id', 'name', 'duration_min', 'price'], 'required'],
-            [['master_id', 'duration_min', 'sort_order'], 'integer'],
+            [['master_id', 'duration_min', 'sort_order', 'category_id'], 'integer'],
             [['name'], 'string', 'max' => 255],
             [['description'], 'string'],
-            [['category'], 'string', 'max' => 100],
             [['price'], 'number', 'min' => 0],
             [['duration_min'], 'integer', 'min' => 5, 'max' => 480],
             [['is_active'], 'boolean'],
             [['is_active'], 'default', 'value' => true],
             [['sort_order'], 'default', 'value' => 0],
             [['master_id'], 'exist', 'targetClass' => Master::class, 'targetAttribute' => 'id'],
+            [['category_id'], 'exist', 'targetClass' => ServiceCategory::class, 'targetAttribute' => 'id', 'skipOnEmpty' => true],
         ];
     }
 
@@ -52,7 +53,11 @@ class Service extends ActiveRecord
             'master_id',
             'name',
             'description',
-            'category',
+            'category_id',
+            'category' => function () {
+                $cat = $this->category;
+                return $cat ? ['id' => $cat->id, 'name' => $cat->name, 'slug' => $cat->slug] : null;
+            },
             'duration_min',
             'price' => function () {
                 return (float) $this->price;
@@ -69,5 +74,10 @@ class Service extends ActiveRecord
     public function getMaster(): \yii\db\ActiveQuery
     {
         return $this->hasOne(Master::class, ['id' => 'master_id']);
+    }
+
+    public function getCategory(): \yii\db\ActiveQuery
+    {
+        return $this->hasOne(ServiceCategory::class, ['id' => 'category_id']);
     }
 }

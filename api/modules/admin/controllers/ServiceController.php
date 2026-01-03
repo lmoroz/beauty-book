@@ -14,7 +14,7 @@ class ServiceController extends Controller
 {
     public function actionIndex(): string
     {
-        $query = Service::find()->with('master')->orderBy(['master_id' => SORT_ASC, 'sort_order' => SORT_ASC]);
+        $query = Service::find()->with(['master', 'category'])->orderBy(['master_id' => SORT_ASC, 'sort_order' => SORT_ASC]);
 
         $masterId = Yii::$app->request->get('master_id');
         if ($masterId) {

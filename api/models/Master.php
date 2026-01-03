@@ -110,6 +110,7 @@ class Master extends ActiveRecord
     {
         return $this->hasMany(Service::class, ['master_id' => 'id'])
             ->andWhere(['is_active' => true])
+            ->with('category')
             ->orderBy(['sort_order' => SORT_ASC, 'name' => SORT_ASC]);
     }
 
