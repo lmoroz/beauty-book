@@ -17,6 +17,7 @@ api/runtime/
 api/web/assets/
 api/vendor/
 api/config/*-local.php
+api/web/uploads/
 
 # Frontend
 frontend/node_modules/
