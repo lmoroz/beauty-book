@@ -98,6 +98,13 @@ $config = [
                 'GET api/v1/masters/<id:\d+>/schedule' => 'api/v1/master/schedule',
                 'GET api/v1/masters/<id:\d+>/schedule/events' => 'api/v1/schedule-event/stream',
 
+                'GET api/v1/master/dashboard/stats' => 'api/v1/master-dashboard/stats',
+                'GET api/v1/master/dashboard/bookings' => 'api/v1/master-dashboard/bookings',
+                'GET api/v1/master/dashboard/schedule' => 'api/v1/master-dashboard/schedule',
+                'GET api/v1/master/dashboard/services' => 'api/v1/master-dashboard/services',
+                'GET api/v1/master/dashboard/profile' => 'api/v1/master-dashboard/profile',
+                'PUT api/v1/master/dashboard/profile' => 'api/v1/master-dashboard/update-profile',
+
                 ['class' => 'yii\rest\UrlRule', 'controller' => 'api/v1/master', 'pluralize' => true],
                 ['class' => 'yii\rest\UrlRule', 'controller' => 'api/v1/service', 'pluralize' => true],
                 ['class' => 'yii\rest\UrlRule', 'controller' => 'api/v1/booking', 'pluralize' => true],
