@@ -83,6 +83,26 @@ export const useDashboardStore = defineStore('dashboard', () => {
     }
   }
 
+  async function toggleSlot(slotId) {
+    try {
+      const { data } = await api.patch('/master/dashboard/toggle-slot', { slot_id: slotId })
+      return data
+    } catch (e) {
+      error.value = e.response?.data?.message || e.message
+      throw e
+    }
+  }
+
+  async function fetchBookingDetail(slotId) {
+    try {
+      const { data } = await api.get('/master/dashboard/booking-detail', { params: { slot_id: slotId } })
+      return data
+    } catch (e) {
+      error.value = e.response?.data?.message || e.message
+      throw e
+    }
+  }
+
   return {
     stats,
     bookings,
@@ -97,5 +117,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
     fetchServices,
     fetchProfile,
     updateProfile,
+    toggleSlot,
+    fetchBookingDetail,
   }
 })

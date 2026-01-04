@@ -12,7 +12,9 @@ use app\models\User;
 use Yii;
 use yii\filters\Cors;
 use yii\rest\Controller;
+use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
+use yii\web\NotFoundHttpException;
 use yii\web\UnauthorizedHttpException;
 
 class MasterDashboardController extends Controller
@@ -322,5 +324,94 @@ class MasterDashboardController extends Controller
         }
 
         return $this->actionProfile();
+    }
+
+    public function actionToggleSlot(): array
+    {
+        $user = $this->authenticateMaster();
+        $masterId = (int) $user->master_id;
+
+        $slotId = (int) Yii::$app->request->getBodyParam('slot_id');
+        if (!$slotId) {
+            throw new BadRequestHttpException(
+                Yii::t('master', 'Parameter "slot_id" is required.')
+            );
+        }
+
+        $slot = TimeSlot::findOne(['id' => $slotId, 'master_id' => $masterId]);
+        if (!$slot) {
+            throw new NotFoundHttpException(
+                Yii::t('master', 'Time slot not found.')
+            );
+        }
+
+        if ($slot->status === TimeSlot::STATUS_BOOKED) {
+            throw new BadRequestHttpException(
+                Yii::t('master', 'Cannot modify a booked slot.')
+            );
+        }
+
+        $slot->status = $slot->status === TimeSlot::STATUS_FREE
+            ? TimeSlot::STATUS_BLOCKED
+            : TimeSlot::STATUS_FREE;
+
+        $slot->save(false);
+
+        return [
+            'id' => $slot->id,
+            'status' => $slot->status,
+        ];
+    }
+
+    public function actionBookingDetail(): array
+    {
+        $user = $this->authenticateMaster();
+        $masterId = (int) $user->master_id;
+
+        $slotId = (int) Yii::$app->request->get('slot_id');
+        if (!$slotId) {
+            throw new BadRequestHttpException(
+                Yii::t('master', 'Parameter "slot_id" is required.')
+            );
+        }
+
+        $slot = TimeSlot::findOne(['id' => $slotId, 'master_id' => $masterId]);
+        if (!$slot) {
+            throw new NotFoundHttpException(
+                Yii::t('master', 'Time slot not found.')
+            );
+        }
+
+        $booking = Booking::find()
+            ->where(['time_slot_id' => $slotId])
+            ->andWhere(['!=', 'status', Booking::STATUS_CANCELLED])
+            ->with('service')
+            ->one();
+
+        if (!$booking) {
+            throw new NotFoundHttpException(
+                Yii::t('booking', 'Booking not found for this slot.')
+            );
+        }
+
+        $svc = $booking->service;
+
+        return [
+            'id' => $booking->id,
+            'client_name' => $booking->client_name,
+            'client_phone' => $booking->client_phone,
+            'client_email' => $booking->client_email,
+            'status' => $booking->status,
+            'notes' => $booking->notes,
+            'date' => $slot->date,
+            'start_time' => $slot->start_time,
+            'end_time' => $slot->end_time,
+            'service' => $svc ? [
+                'name' => $svc->name,
+                'price' => (float) $svc->price,
+                'duration_min' => (int) $svc->duration_min,
+            ] : null,
+            'created_at' => $booking->created_at,
+        ];
     }
 }

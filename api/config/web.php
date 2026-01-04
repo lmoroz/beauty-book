@@ -104,6 +104,8 @@ $config = [
                 'GET api/v1/master/dashboard/services' => 'api/v1/master-dashboard/services',
                 'GET api/v1/master/dashboard/profile' => 'api/v1/master-dashboard/profile',
                 'PUT api/v1/master/dashboard/profile' => 'api/v1/master-dashboard/update-profile',
+                'PATCH api/v1/master/dashboard/toggle-slot' => 'api/v1/master-dashboard/toggle-slot',
+                'GET api/v1/master/dashboard/booking-detail' => 'api/v1/master-dashboard/booking-detail',
 
                 ['class' => 'yii\rest\UrlRule', 'controller' => 'api/v1/master', 'pluralize' => true],
                 ['class' => 'yii\rest\UrlRule', 'controller' => 'api/v1/service', 'pluralize' => true],
