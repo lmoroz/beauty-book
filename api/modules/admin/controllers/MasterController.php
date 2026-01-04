@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace app\modules\admin\controllers;
 
 use app\models\Master;
+use app\models\User;
 use Yii;
 use yii\data\ActiveDataProvider;
 use yii\web\Controller;
@@ -53,6 +54,7 @@ class MasterController extends Controller
             $model->specialization_ids = Yii::$app->request->post('specialization_ids', []);
             if ($model->save()) {
                 $model->saveSpecializations();
+                $this->saveUserAccount($model);
                 Yii::$app->session->setFlash('success', 'Мастер создан.');
                 return $this->redirect(['view', 'id' => $model->id]);
             }
@@ -74,6 +76,7 @@ class MasterController extends Controller
             $model->specialization_ids = Yii::$app->request->post('specialization_ids', []);
             if ($model->save()) {
                 $model->saveSpecializations();
+                $this->saveUserAccount($model);
                 Yii::$app->session->setFlash('success', 'Мастер обновлён.');
                 return $this->redirect(['view', 'id' => $model->id]);
             }
@@ -82,7 +85,10 @@ class MasterController extends Controller
         return $this->render('update', ['model' => $model]);
     }
 
-    public function actionDelete(int $id): \yii\web\Response
+    /**
+     * @return \yii\web\Response
+     */
+    public function actionDelete(int $id)
     {
         $model = $this->findModel($id);
         $model->status = 'inactive';
@@ -90,6 +96,43 @@ class MasterController extends Controller
 
         Yii::$app->session->setFlash('success', 'Мастер деактивирован.');
         return $this->redirect(['index']);
+    }
+
+    private function saveUserAccount(Master $model): void
+    {
+        $userData = Yii::$app->request->post('User', []);
+        $username = trim($userData['username'] ?? '');
+        $email = trim($userData['email'] ?? '');
+        $password = $userData['password'] ?? '';
+
+        if (empty($username) || empty($email)) {
+            return;
+        }
+
+        $user = User::findOne(['master_id' => $model->id, 'role' => User::ROLE_MASTER]);
+
+        if (!$user) {
+            $user = new User();
+            $user->master_id = $model->id;
+            $user->role = User::ROLE_MASTER;
+            $user->status = User::STATUS_ACTIVE;
+            $user->generateAuthKey();
+            $user->generateAccessToken();
+        }
+
+        $user->username = $username;
+        $user->email = $email;
+
+        if (!empty($password)) {
+            $user->setPassword($password);
+        }
+
+        if (!$user->save()) {
+            $errors = implode(', ', array_map(function ($e) {
+                return implode('; ', $e);
+            }, $user->getErrors()));
+            Yii::$app->session->setFlash('warning', 'Учётная запись: ' . $errors);
+        }
     }
 
     private function prepareModel(Master $model): void

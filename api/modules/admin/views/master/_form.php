@@ -101,6 +101,35 @@ $selectedIds = $model->specialization_ids ?: [];
             <input id="f-sort" type="number" name="Master[sort_order]" value="<?= $model->sort_order ?? 0 ?>">
         </div>
 
+<?php
+$user = $model->isNewRecord ? null : \app\models\User::findOne(['master_id' => $model->id, 'role' => 'master']);
+?>
+
+        <div style="border-top: 2px solid #eee; margin-top: 24px; padding-top: 24px;">
+            <h3 style="margin: 0 0 16px; font-size: 16px; color: #333;">Учётная запись для входа в кабинет</h3>
+
+            <div class="form-group">
+                <label for="f-username">Логин *</label>
+                <input id="f-username" type="text" name="User[username]"
+                       value="<?= Html::encode($user->username ?? '') ?>"
+                       placeholder="anna.petrova" required>
+                <small style="color: #999;">Будет использоваться для входа в личный кабинет мастера</small>
+            </div>
+
+            <div class="form-group">
+                <label for="f-user-email">Email *</label>
+                <input id="f-user-email" type="email" name="User[email]"
+                       value="<?= Html::encode($user->email ?? '') ?>"
+                       placeholder="anna@labellezza.ru" required>
+            </div>
+
+            <div class="form-group">
+                <label for="f-password"><?= $user ? 'Новый пароль (оставьте пустым для сохранения текущего)' : 'Пароль *' ?></label>
+                <input id="f-password" type="password" name="User[password]"
+                       placeholder="••••••••" <?= $user ? '' : 'required' ?>>
+            </div>
+        </div>
+
         <div class="actions">
             <button type="submit" class="btn btn-primary"><?= $isNew ? 'Создать' : 'Сохранить' ?></button>
             <a href="<?= Url::to(['index']) ?>" class="btn" style="background: #eee; color: #333;">Отмена</a>

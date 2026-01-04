@@ -28,7 +28,7 @@ async function handleLogin() {
 
 <template>
   <main class="master-login">
-    <div class="master-login__card">
+    <div class="master-login__card glass-panel">
       <h1 class="master-login__brand">La Bellezza</h1>
       <h2 class="master-login__title">Вход для мастеров</h2>
 
@@ -73,101 +73,103 @@ async function handleLogin() {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: var(--color-bg, #0e0e0e);
-  padding: var(--space-md);
+  background: var(--bg-primary, #0A0A0A);
+  padding: 24px;
 }
 
 .master-login__card {
   width: 100%;
-  max-width: 400px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: var(--space-2xl) var(--space-xl);
-  backdrop-filter: blur(20px);
+  max-width: 440px;
+  padding: 48px 40px;
 }
 
 .master-login__brand {
-  font-family: var(--font-display, serif);
+  font-family: var(--font-brand);
   font-size: 2rem;
   text-align: center;
-  color: var(--color-gold, #c9a96e);
-  margin-bottom: var(--space-xs);
+  color: var(--accent-gold, #DAB97B);
+  margin-bottom: 8px;
   font-weight: 400;
 }
 
 .master-login__title {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   text-align: center;
-  color: var(--color-text-muted, #999);
+  color: var(--text-muted, #777);
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  margin-bottom: var(--space-xl);
+  margin-bottom: 32px;
 }
 
 .master-login__form {
   display: flex;
   flex-direction: column;
-  gap: var(--space-md);
+  gap: 20px;
 }
 
 .master-login__field {
   display: flex;
   flex-direction: column;
-  gap: var(--space-xs);
+  gap: 8px;
 }
 
 .master-login__field label {
-  font-size: 0.8rem;
-  color: var(--color-text-muted, #999);
+  font-family: var(--font-caption);
+  font-size: 12px;
+  color: var(--text-secondary, #AFAFAF);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
 }
 
 .master-login__field input {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 12px 16px;
-  color: var(--color-text, #f5f0eb);
+  background: var(--bg-primary, #0A0A0A);
+  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.05));
+  border-radius: 12px;
+  padding: 14px 16px;
+  color: var(--text-primary, #F5F0EB);
   font-size: 1rem;
-  transition: border-color 0.2s ease;
+  font-family: var(--font-body);
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .master-login__field input:focus {
   outline: none;
-  border-color: var(--color-gold, #c9a96e);
+  border-color: var(--accent-gold, #DAB97B);
+  box-shadow: 0 0 0 2px rgba(200, 169, 110, 0.2);
 }
 
 .master-login__field input::placeholder {
-  color: rgba(255, 255, 255, 0.2);
+  color: var(--text-muted, #777);
 }
 
 .master-login__error {
-  color: #e74c3c;
+  color: var(--error, #E57373);
   font-size: 0.85rem;
   text-align: center;
   margin: 0;
 }
 
 .master-login__submit {
-  background: linear-gradient(135deg, var(--color-gold, #c9a96e), var(--color-gold-light, #dbb985));
-  color: var(--color-bg, #0e0e0e);
+  background: linear-gradient(135deg, #f0dab7 0%, #c8a96e 54%, #9f7445 100%);
+  color: #1f1710;
   border: none;
-  border-radius: 8px;
-  padding: 12px;
+  border-radius: 999px;
+  padding: 14px;
+  font-family: var(--font-nav);
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: opacity 0.2s ease, transform 0.15s ease;
+  transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  margin-top: 4px;
+  box-shadow: 0 8px 20px rgba(200, 169, 110, 0.26);
 }
 
 .master-login__submit:hover:not(:disabled) {
-  opacity: 0.9;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(200, 169, 110, 0.4);
 }
 
 .master-login__submit:disabled {
