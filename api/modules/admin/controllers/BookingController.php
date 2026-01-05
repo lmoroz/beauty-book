@@ -51,7 +51,25 @@ class BookingController extends Controller
     public function actionCancel(int $id): \yii\web\Response
     {
         $model = $this->findModel($id);
+
+        $slotsToFree = \app\models\TimeSlot::find()
+            ->where(['booking_id' => $model->id])
+            ->all();
+
+        if (empty($slotsToFree)) {
+            $slot = $model->timeSlot;
+            if ($slot) {
+                $slotsToFree = [$slot];
+            }
+        }
+
         $model->cancel('Cancelled by admin');
+
+        foreach ($slotsToFree as $slot) {
+            Yii::$app->schedulePublisher->publishSlotFreed(
+                $slot->master_id, $slot->id, $slot->date
+            );
+        }
 
         Yii::$app->session->setFlash('success', 'Бронирование отменено.');
         return $this->redirect(['view', 'id' => $id]);

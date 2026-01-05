@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, computed } from 'vue'
+import { onMounted, onUnmounted, computed } from 'vue'
 import { RouterView, RouterLink, useRouter, useRoute } from 'vue-router'
 import { CalendarDays, ClipboardList, Scissors, UserCircle, LogOut } from 'lucide-vue-next'
 import { useAuthStore } from '../../stores/auth.js'
@@ -30,6 +30,7 @@ const masterSpec = computed(() => {
 })
 
 function logout() {
+  dashboard.unsubscribeSSE()
   auth.logout()
   router.push({ name: 'master-login' })
 }
@@ -39,6 +40,15 @@ onMounted(async () => {
     await auth.fetchUser()
   }
   dashboard.fetchProfile()
+
+  const masterId = auth.masterId
+  if (masterId) {
+    dashboard.subscribeSSE(masterId)
+  }
+})
+
+onUnmounted(() => {
+  dashboard.unsubscribeSSE()
 })
 </script>
 

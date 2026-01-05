@@ -11,6 +11,10 @@ export const useDashboardStore = defineStore('dashboard', () => {
   const loading = ref(false)
   const error = ref(null)
 
+  let eventSource = null
+  let currentWeekStart = null
+  const sseConnected = ref(false)
+
   async function fetchStats() {
     try {
       const { data } = await api.get('/master/dashboard/stats')
@@ -33,9 +37,10 @@ export const useDashboardStore = defineStore('dashboard', () => {
   }
 
   async function fetchSchedule(weekStart = null) {
+    if (weekStart) currentWeekStart = weekStart
     loading.value = true
     try {
-      const params = weekStart ? { week_start: weekStart } : {}
+      const params = currentWeekStart ? { week_start: currentWeekStart } : {}
       const { data } = await api.get('/master/dashboard/schedule', { params })
       schedule.value = data
     } catch (e) {
@@ -105,6 +110,46 @@ export const useDashboardStore = defineStore('dashboard', () => {
     }
   }
 
+  function subscribeSSE(masterId) {
+    if (eventSource) {
+      eventSource.close()
+    }
+
+    const baseUrl = api.defaults.baseURL.replace('/api/v1', '')
+    const url = `${baseUrl}/api/v1/schedule-events/${masterId}/stream`
+
+    eventSource = new EventSource(url, { withCredentials: true })
+    sseConnected.value = true
+
+    eventSource.addEventListener('schedule_update', (event) => {
+      try {
+        const data = JSON.parse(event.data)
+        if (data.action === 'slot_booked' || data.action === 'slot_freed') {
+          fetchSchedule()
+          fetchStats()
+        }
+      } catch {
+        // ignore parse errors
+      }
+    })
+
+    eventSource.onerror = () => {
+      sseConnected.value = false
+      eventSource.close()
+      setTimeout(() => {
+        if (masterId) subscribeSSE(masterId)
+      }, 5000)
+    }
+  }
+
+  function unsubscribeSSE() {
+    if (eventSource) {
+      eventSource.close()
+      eventSource = null
+    }
+    sseConnected.value = false
+  }
+
   return {
     stats,
     bookings,
@@ -113,6 +158,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
     profile,
     loading,
     error,
+    sseConnected,
     fetchStats,
     fetchBookings,
     fetchSchedule,
@@ -121,5 +167,8 @@ export const useDashboardStore = defineStore('dashboard', () => {
     updateProfile,
     toggleSlot,
     fetchBookingDetail,
+    subscribeSSE,
+    unsubscribeSSE,
   }
 })
+

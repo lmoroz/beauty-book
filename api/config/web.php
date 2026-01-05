@@ -107,6 +107,8 @@ $config = [
                 'PATCH api/v1/master/dashboard/toggle-slot' => 'api/v1/master-dashboard/toggle-slot',
                 'GET api/v1/master/dashboard/booking-detail' => 'api/v1/master-dashboard/booking-detail',
 
+                'GET api/v1/schedule-events/<id:\d+>/stream' => 'api/v1/schedule-event/stream',
+
                 ['class' => 'yii\rest\UrlRule', 'controller' => 'api/v1/master', 'pluralize' => true],
                 ['class' => 'yii\rest\UrlRule', 'controller' => 'api/v1/service', 'pluralize' => true],
                 ['class' => 'yii\rest\UrlRule', 'controller' => 'api/v1/booking', 'pluralize' => true],
