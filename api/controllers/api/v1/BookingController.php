@@ -71,31 +71,63 @@ class BookingController extends ActiveController
             );
         }
 
-        $redis = Yii::$app->redis;
-        $lockKey = "lock:slot:{$slotId}";
-        $lockValue = uniqid('booking_', true);
-        $lockTtl = 10;
-
-        $acquired = $redis->set($lockKey, $lockValue, 'NX', 'EX', $lockTtl);
-
-        if (!$acquired) {
-            throw new BadRequestHttpException(
-                Yii::t('booking', 'This time slot is currently being booked by another client. Please try again.')
+        $service = \app\models\Service::findOne($serviceId);
+        if (!$service) {
+            throw new NotFoundHttpException(
+                Yii::t('booking', 'Service not found.')
             );
         }
 
-        try {
-            $slot = TimeSlot::findOne($slotId);
-            if (!$slot) {
-                throw new NotFoundHttpException(
-                    Yii::t('booking', 'Time slot not found.')
+        $slot = TimeSlot::findOne($slotId);
+        if (!$slot) {
+            throw new NotFoundHttpException(
+                Yii::t('booking', 'Time slot not found.')
+            );
+        }
+
+        $slotDurationMin = (strtotime($slot->end_time) - strtotime($slot->start_time)) / 60;
+        $slotsNeeded = max(1, (int) ceil($service->duration_min / $slotDurationMin));
+
+        $allSlots = TimeSlot::findConsecutiveFreeSlots(
+            $slot->master_id,
+            $slot->date,
+            $slot->start_time,
+            $slotsNeeded
+        );
+
+        if (count($allSlots) < $slotsNeeded) {
+            throw new BadRequestHttpException(
+                Yii::t('booking', 'Not enough consecutive free slots for this service ({n} slots needed).', ['n' => $slotsNeeded])
+            );
+        }
+
+        $redis = Yii::$app->redis;
+        $lockValue = uniqid('booking_', true);
+        $lockTtl = 10;
+        $lockKeys = [];
+
+        foreach ($allSlots as $s) {
+            $lockKey = "lock:slot:{$s->id}";
+            $acquired = $redis->set($lockKey, $lockValue, 'NX', 'EX', $lockTtl);
+            if (!$acquired) {
+                foreach ($lockKeys as $lk) {
+                    $redis->del($lk);
+                }
+                throw new BadRequestHttpException(
+                    Yii::t('booking', 'One of the required time slots is currently being booked. Please try again.')
                 );
             }
+            $lockKeys[] = $lockKey;
+        }
 
-            if (!$slot->isFree()) {
-                throw new BadRequestHttpException(
-                    Yii::t('booking', 'This time slot is no longer available.')
-                );
+        try {
+            foreach ($allSlots as $s) {
+                $fresh = TimeSlot::findOne($s->id);
+                if (!$fresh || !$fresh->isFree()) {
+                    throw new BadRequestHttpException(
+                        Yii::t('booking', 'Time slot {time} is no longer available.', ['time' => $s->start_time])
+                    );
+                }
             }
 
             $booking = new Booking();
@@ -113,17 +145,20 @@ class BookingController extends ActiveController
 
             $transaction = Yii::$app->db->beginTransaction();
             try {
-                $slot->status = TimeSlot::STATUS_BOOKED;
-                if (!$slot->save(false)) {
-                    throw new ServerErrorHttpException(
-                        Yii::t('booking', 'Failed to update time slot.')
-                    );
-                }
-
                 if (!$booking->save(false)) {
                     throw new ServerErrorHttpException(
                         Yii::t('booking', 'Failed to create booking.')
                     );
+                }
+
+                foreach ($allSlots as $s) {
+                    $s->status = TimeSlot::STATUS_BOOKED;
+                    $s->booking_id = $booking->id;
+                    if (!$s->save(false)) {
+                        throw new ServerErrorHttpException(
+                            Yii::t('booking', 'Failed to update time slot.')
+                        );
+                    }
                 }
 
                 $transaction->commit();
@@ -137,17 +172,21 @@ class BookingController extends ActiveController
                 'booking_id' => $booking->id,
             ]);
 
-            Yii::$app->schedulePublisher->publishSlotBooked(
-                $slot->master_id, $slotId, $slot->date
-            );
+            foreach ($allSlots as $s) {
+                Yii::$app->schedulePublisher->publishSlotBooked(
+                    $s->master_id, $s->id, $s->date
+                );
+            }
 
             Yii::$app->response->statusCode = 201;
             return $booking;
 
         } finally {
-            $currentValue = $redis->get($lockKey);
-            if ($currentValue === $lockValue) {
-                $redis->del($lockKey);
+            foreach ($lockKeys as $lk) {
+                $currentValue = $redis->get($lk);
+                if ($currentValue === $lockValue) {
+                    $redis->del($lk);
+                }
             }
         }
     }

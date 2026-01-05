@@ -14,6 +14,7 @@ use yii\db\ActiveRecord;
  * @property string $end_time
  * @property string $status
  * @property string|null $block_reason
+ * @property int|null $booking_id
  * @property string $created_at
  * @property string $updated_at
  *
@@ -58,6 +59,7 @@ class TimeSlot extends ActiveRecord
             'end_time',
             'status',
             'block_reason',
+            'booking_id',
         ];
     }
 
@@ -96,5 +98,37 @@ class TimeSlot extends ActiveRecord
                 'status' => self::STATUS_FREE,
             ])
             ->orderBy(['start_time' => SORT_ASC]);
+    }
+
+    public static function findConsecutiveFreeSlots(int $masterId, string $date, string $startTime, int $count): array
+    {
+        if ($count <= 0) {
+            return [];
+        }
+
+        $slots = static::find()
+            ->where([
+                'master_id' => $masterId,
+                'date' => $date,
+                'status' => self::STATUS_FREE,
+            ])
+            ->andWhere(['>=', 'start_time', $startTime])
+            ->orderBy(['start_time' => SORT_ASC])
+            ->limit($count)
+            ->all();
+
+        if (count($slots) < $count) {
+            return [];
+        }
+
+        for ($i = 1; $i < $count; $i++) {
+            $prevEnd = $slots[$i - 1]->end_time;
+            $currStart = $slots[$i]->start_time;
+            if ($currStart !== $prevEnd) {
+                return [];
+            }
+        }
+
+        return $slots;
     }
 }

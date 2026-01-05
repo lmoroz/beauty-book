@@ -100,12 +100,23 @@ class Booking extends ActiveRecord
         $this->cancel_reason = $reason;
 
         if ($this->save(false)) {
-            // Release the time slot
-            $slot = $this->timeSlot;
-            if ($slot) {
+            $slots = TimeSlot::find()
+                ->where(['booking_id' => $this->id])
+                ->all();
+
+            if (empty($slots)) {
+                $slot = $this->timeSlot;
+                if ($slot) {
+                    $slots = [$slot];
+                }
+            }
+
+            foreach ($slots as $slot) {
                 $slot->status = TimeSlot::STATUS_FREE;
+                $slot->booking_id = null;
                 $slot->save(false);
             }
+
             return true;
         }
 

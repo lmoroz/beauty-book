@@ -219,6 +219,8 @@ class MasterDashboardController extends Controller
 
         $bookingsBySlot = [];
         $slotIds = array_map(function ($s) { return $s->id; }, $slots);
+        $bookingIds = array_filter(array_map(function ($s) { return $s->booking_id; }, $slots));
+
         if ($slotIds) {
             $bookings = Booking::find()
                 ->where(['time_slot_id' => $slotIds])
@@ -227,6 +229,17 @@ class MasterDashboardController extends Controller
                 ->indexBy('time_slot_id')
                 ->all();
             $bookingsBySlot = $bookings;
+        }
+
+        $bookingsById = [];
+        if ($bookingIds) {
+            $extra = Booking::find()
+                ->where(['id' => array_unique($bookingIds)])
+                ->andWhere(['!=', 'status', Booking::STATUS_CANCELLED])
+                ->with('service')
+                ->indexBy('id')
+                ->all();
+            $bookingsById = $extra;
         }
 
         $result = [];
@@ -240,8 +253,14 @@ class MasterDashboardController extends Controller
                 'block_reason' => $slot->block_reason,
             ];
 
+            $b = null;
             if (isset($bookingsBySlot[$slot->id])) {
                 $b = $bookingsBySlot[$slot->id];
+            } elseif ($slot->booking_id && isset($bookingsById[$slot->booking_id])) {
+                $b = $bookingsById[$slot->booking_id];
+            }
+
+            if ($b) {
                 $entry['booking'] = [
                     'id' => $b->id,
                     'client_name' => $b->client_name,
