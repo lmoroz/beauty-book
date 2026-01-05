@@ -12,6 +12,9 @@ const bookingDetail = ref(null)
 const showDetail = ref(false)
 const detailLoading = ref(false)
 
+const contextMenu = ref(null)
+const contextSlot = ref(null)
+
 function getMonday(d) {
   const date = new Date(d)
   const day = date.getDay()
@@ -82,6 +85,7 @@ function getSlot(date, time) {
 function getSlotClass(slot) {
   if (!slot) return ''
   if (slot.status === 'booked') return 'slot slot--booked'
+  if (slot.status === 'blocked' && slot.block_reason === 'lunch') return 'slot slot--lunch'
   if (slot.status === 'blocked') return 'slot slot--blocked'
   if (slot.status === 'free') return 'slot slot--free'
   return 'slot'
@@ -92,35 +96,61 @@ function getSlotLabel(slot) {
   if (slot.status === 'booked' && slot.booking) {
     return `${slot.booking.client_name} (${slot.booking.service_name || ''})`
   }
+  if (slot.status === 'blocked' && slot.block_reason === 'lunch') return 'Обед'
   if (slot.status === 'blocked') return 'Заблокировано'
   if (slot.status === 'free') return 'Свободно'
   return ''
 }
 
-async function handleSlotClick(slot) {
+function handleSlotClick(slot, event) {
   if (!slot) return
 
   if (slot.status === 'booked') {
     detailLoading.value = true
     showDetail.value = true
-    try {
-      bookingDetail.value = await dashboard.fetchBookingDetail(slot.id)
-    } catch {
-      bookingDetail.value = null
-    } finally {
-      detailLoading.value = false
-    }
+    dashboard.fetchBookingDetail(slot.id)
+      .then(data => { bookingDetail.value = data })
+      .catch(() => { bookingDetail.value = null })
+      .finally(() => { detailLoading.value = false })
     return
   }
 
-  if (slot.status === 'free' || slot.status === 'blocked') {
-    try {
-      const result = await dashboard.toggleSlot(slot.id)
-      slot.status = result.status
-    } catch {
-      // error is in store
-    }
+  if (slot.status === 'blocked') {
+    dashboard.toggleSlot(slot.id)
+      .then(result => {
+        slot.status = result.status
+        slot.block_reason = result.block_reason
+      })
+      .catch(() => {})
+    return
   }
+
+  if (slot.status === 'free') {
+    const rect = event.currentTarget.getBoundingClientRect()
+    contextMenu.value = {
+      x: rect.left,
+      y: rect.bottom + 4,
+    }
+    contextSlot.value = slot
+  }
+}
+
+async function blockSlot(reason) {
+  const slot = contextSlot.value
+  closeContextMenu()
+  if (!slot) return
+  try {
+    const result = await dashboard.toggleSlot(slot.id, reason)
+    slot.status = result.status
+    slot.block_reason = result.block_reason
+  } catch {
+    // error in store
+  }
+}
+
+function closeContextMenu() {
+  contextMenu.value = null
+  contextSlot.value = null
 }
 
 function closeDetail() {
@@ -213,7 +243,7 @@ onMounted(loadSchedule)
           <div
             v-if="getSlot(day.date, time)"
             :class="getSlotClass(getSlot(day.date, time))"
-            @click="handleSlotClick(getSlot(day.date, time))"
+            @click="handleSlotClick(getSlot(day.date, time), $event)"
           >
             {{ getSlotLabel(getSlot(day.date, time)) }}
           </div>
@@ -221,9 +251,32 @@ onMounted(loadSchedule)
       </template>
     </div>
 
-    <p class="schedule-view__hint">
-      Кликните на свободный слот, чтобы заблокировать его. Кликните на бронь, чтобы открыть детали.
-    </p>
+    <!-- Context Menu for Free Slots -->
+    <Teleport to="body">
+      <Transition name="ctx">
+        <div
+          v-if="contextMenu"
+          class="ctx-backdrop"
+          @click="closeContextMenu"
+        >
+          <div
+            class="ctx-menu glass-panel"
+            :style="{ left: contextMenu.x + 'px', top: contextMenu.y + 'px' }"
+            @click.stop
+          >
+            <button class="ctx-menu__item" @click="blockSlot('lunch')">
+              🍽️ Обед
+            </button>
+            <button class="ctx-menu__item" @click="blockSlot(null)">
+              🚫 Заблокировать
+            </button>
+            <button class="ctx-menu__item ctx-menu__item--cancel" @click="closeContextMenu">
+              Отмена
+            </button>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
 
     <!-- Booking Detail Modal -->
     <Teleport to="body">
@@ -584,6 +637,65 @@ onMounted(loadSchedule)
 .modal-enter-from .detail-modal,
 .modal-leave-to .detail-modal {
   transform: scale(0.9) translateY(20px);
+  opacity: 0;
+}
+
+/* Lunch slot */
+.slot--lunch {
+  background: rgba(255, 152, 0, 0.1);
+  border: 1px dashed rgba(255, 152, 0, 0.6);
+  color: #ff9800;
+}
+
+/* Context Menu */
+.ctx-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+}
+
+.ctx-menu {
+  position: fixed;
+  z-index: 201;
+  min-width: 180px;
+  padding: 8px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ctx-menu__item {
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-family: var(--font-nav);
+  font-size: 14px;
+  color: var(--text-primary, #F5F0EB);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+}
+
+.ctx-menu__item:hover {
+  background: var(--bg-glass-strong, rgba(200, 169, 110, 0.15));
+}
+
+.ctx-menu__item--cancel {
+  color: var(--text-muted, #777);
+  font-size: 13px;
+  border-top: 1px solid var(--border-subtle, rgba(255,255,255,0.05));
+  margin-top: 4px;
+  padding-top: 10px;
+  border-radius: 0 0 8px 8px;
+}
+
+/* Context menu transition */
+.ctx-enter-active,
+.ctx-leave-active {
+  transition: opacity 0.15s ease;
+}
+.ctx-enter-from,
+.ctx-leave-to {
   opacity: 0;
 }
 </style>

@@ -13,6 +13,7 @@ use yii\db\ActiveRecord;
  * @property string $start_time
  * @property string $end_time
  * @property string $status
+ * @property string|null $block_reason
  * @property string $created_at
  * @property string $updated_at
  *
@@ -24,6 +25,9 @@ class TimeSlot extends ActiveRecord
     public const STATUS_FREE = 'free';
     public const STATUS_BOOKED = 'booked';
     public const STATUS_BLOCKED = 'blocked';
+
+    public const REASON_LUNCH = 'lunch';
+    public const REASON_BREAK = 'break';
 
     public static function tableName(): string
     {
@@ -53,6 +57,7 @@ class TimeSlot extends ActiveRecord
             'start_time',
             'end_time',
             'status',
+            'block_reason',
         ];
     }
 

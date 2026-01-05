@@ -237,6 +237,7 @@ class MasterDashboardController extends Controller
                 'start_time' => $slot->start_time,
                 'end_time' => $slot->end_time,
                 'status' => $slot->status,
+                'block_reason' => $slot->block_reason,
             ];
 
             if (isset($bookingsBySlot[$slot->id])) {
@@ -351,15 +352,21 @@ class MasterDashboardController extends Controller
             );
         }
 
-        $slot->status = $slot->status === TimeSlot::STATUS_FREE
-            ? TimeSlot::STATUS_BLOCKED
-            : TimeSlot::STATUS_FREE;
+        if ($slot->status === TimeSlot::STATUS_FREE) {
+            $slot->status = TimeSlot::STATUS_BLOCKED;
+            $reason = Yii::$app->request->getBodyParam('reason');
+            $slot->block_reason = in_array($reason, ['lunch', 'break']) ? $reason : null;
+        } else {
+            $slot->status = TimeSlot::STATUS_FREE;
+            $slot->block_reason = null;
+        }
 
         $slot->save(false);
 
         return [
             'id' => $slot->id,
             'status' => $slot->status,
+            'block_reason' => $slot->block_reason,
         ];
     }
 

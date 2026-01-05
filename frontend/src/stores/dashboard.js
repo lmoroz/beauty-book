@@ -83,9 +83,11 @@ export const useDashboardStore = defineStore('dashboard', () => {
     }
   }
 
-  async function toggleSlot(slotId) {
+  async function toggleSlot(slotId, reason = null) {
     try {
-      const { data } = await api.patch('/master/dashboard/toggle-slot', { slot_id: slotId })
+      const payload = { slot_id: slotId }
+      if (reason) payload.reason = reason
+      const { data } = await api.patch('/master/dashboard/toggle-slot', payload)
       return data
     } catch (e) {
       error.value = e.response?.data?.message || e.message
