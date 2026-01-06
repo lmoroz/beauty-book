@@ -3,5 +3,7 @@
 return [
     'adminEmail' => 'admin@example.com',
     'senderEmail' => 'noreply@example.com',
-    'senderName' => 'Example.com mailer',
+    'senderName' => 'BeautyBook',
+    'salonName' => 'BeautyBook',
+    'salonPhone' => '+7 (999) 123-45-67',
 ];

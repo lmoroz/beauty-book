@@ -41,6 +41,14 @@ $this->title = 'Настройки салона';
                 <option value="0" <?= !$model->is_active ? 'selected' : '' ?>>Нет</option>
             </select>
         </div>
+
+        <h3 style="margin-top: 24px;">Чат-бот</h3>
+
+        <div class="form-group">
+            <label for="f-greeting">Приветственное сообщение бота</label>
+            <textarea id="f-greeting" name="Salon[chat_greeting]" rows="3" placeholder="<?= Html::encode(\app\models\Salon::DEFAULT_CHAT_GREETING) ?>"><?= Html::encode($model->chat_greeting) ?></textarea>
+            <small style="color: #888;">Первое сообщение, которое видит клиент при открытии чата. Оставьте пустым для текста по умолчанию.</small>
+        </div>
         <div class="actions">
             <button type="submit" class="btn btn-primary">Сохранить</button>
         </div>

@@ -7,6 +7,9 @@ $db = file_exists(__DIR__ . '/db-local.php')
 $redis = file_exists(__DIR__ . '/redis-local.php')
     ? require __DIR__ . '/redis-local.php'
     : require __DIR__ . '/redis.php';
+$llm = file_exists(__DIR__ . '/llm-local.php')
+    ? require __DIR__ . '/llm-local.php'
+    : require __DIR__ . '/llm.php';
 
 $config = [
     'id' => 'beautybook',
@@ -37,6 +40,7 @@ $config = [
             'class' => 'app\components\SchedulePublisher',
             'redis' => 'redis',
         ],
+        'llm' => $llm,
         'cache' => [
             'class' => 'yii\redis\Cache',
             'redis' => 'redis',
@@ -91,6 +95,9 @@ $config = [
             'enableStrictParsing' => false,
             'showScriptName' => false,
             'rules' => [
+                'POST api/v1/chat' => 'api/v1/chat/send',
+                'GET api/v1/chat/greeting' => 'api/v1/chat/greeting',
+
                 'POST api/v1/auth/login' => 'api/v1/auth/login',
                 'GET api/v1/auth/me' => 'api/v1/auth/me',
 

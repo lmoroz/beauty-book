@@ -1,12 +1,39 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, nextTick } from 'vue'
 import { X, ChevronDown } from 'lucide-vue-next'
 import chatAvatarUrl from '../../assets/images/chat_avatar.png'
+import { useChat } from '../../composables/useChat.js'
 
 const expanded = ref(false)
+const userInput = ref('')
+const messagesEl = ref(null)
+const initialized = ref(false)
 
-function openChat() { expanded.value = true }
+const { messages, loading, getGreeting, fetchGreeting } = useChat()
+
+async function openChat() {
+  expanded.value = true
+  if (!initialized.value) {
+    await fetchGreeting()
+    const text = getGreeting()
+    messages.value = text
+      .split('\n')
+      .map(line => line.trim())
+      .filter(Boolean)
+      .map(line => ({ role: 'assistant', content: line }))
+    initialized.value = true
+  }
+  await nextTick()
+  scrollToBottom()
+}
+
 function closeChat() { expanded.value = false }
+
+function scrollToBottom() {
+  if (messagesEl.value) {
+    messagesEl.value.scrollTop = messagesEl.value.scrollHeight
+  }
+}
 
 watch(expanded, (open) => {
   if (open) {
@@ -59,23 +86,27 @@ function onKeydown(e) {
           </div>
         </header>
 
-        <div class="chat-window__messages">
-          <article class="msg msg--bot">
-            Здравствуйте! Я помогу подобрать мастера, услугу и удобное время для записи.
+        <div ref="messagesEl" class="chat-window__messages">
+          <article
+            v-for="(msg, i) in messages"
+            :key="i"
+            class="msg"
+            :class="msg.role === 'assistant' ? 'msg--bot' : 'msg--client'"
+          >
+            {{ msg.content }}
           </article>
-          <article class="msg msg--bot">
-            Расскажите, что вас интересует сегодня?
-          </article>
-          <article class="msg msg--client">
-            Хочу окрашивание и укладку на этой неделе.
-          </article>
-          <article class="msg msg--typing">
+          <article v-if="loading" class="msg msg--typing">
             <span /><span /><span />
           </article>
         </div>
 
         <form class="chat-window__input" @submit.prevent>
-          <input type="text" placeholder="Введите сообщение..." aria-label="Сообщение">
+          <input
+            v-model="userInput"
+            type="text"
+            placeholder="Введите сообщение..."
+            aria-label="Сообщение"
+          >
           <button class="btn btn-gold" type="submit">Отправить</button>
         </form>
       </section>

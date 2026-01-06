@@ -24,6 +24,11 @@ use yii\db\ActiveRecord;
  */
 class Salon extends ActiveRecord
 {
+    const DEFAULT_CHAT_GREETING = 'Здравствуйте! Я помогу подобрать мастера, услугу и удобное время для записи. Расскажите, что вас интересует?';
+
+    /** @var string used by admin form */
+    public $chat_greeting;
+
     public static function tableName(): string
     {
         return '{{%salons}}';
@@ -41,9 +46,57 @@ class Salon extends ActiveRecord
             [['phone'], 'string', 'max' => 20],
             [['email'], 'email'],
             [['description'], 'string'],
-            [['working_hours', 'settings'], 'safe'],
+            [['working_hours', 'settings', 'chat_greeting'], 'safe'],
             [['is_active'], 'boolean'],
         ];
+    }
+
+    public function afterFind()
+    {
+        parent::afterFind();
+        $data = $this->getSettingsArray();
+        $this->chat_greeting = isset($data['chat_greeting']) ? $data['chat_greeting'] : '';
+    }
+
+    public function beforeSave($insert)
+    {
+        if (!parent::beforeSave($insert)) {
+            return false;
+        }
+        $data = $this->getSettingsArray();
+        if ($this->chat_greeting !== null && $this->chat_greeting !== '') {
+            $data['chat_greeting'] = $this->chat_greeting;
+        } else {
+            unset($data['chat_greeting']);
+        }
+        $this->settings = !empty($data) ? json_encode($data, JSON_UNESCAPED_UNICODE) : null;
+        return true;
+    }
+
+    /**
+     * @return string
+     */
+    public function getChatGreeting()
+    {
+        $data = $this->getSettingsArray();
+        return isset($data['chat_greeting']) && $data['chat_greeting'] !== ''
+            ? $data['chat_greeting']
+            : self::DEFAULT_CHAT_GREETING;
+    }
+
+    /**
+     * @return array
+     */
+    private function getSettingsArray()
+    {
+        if (empty($this->settings)) {
+            return [];
+        }
+        if (is_array($this->settings)) {
+            return $this->settings;
+        }
+        $decoded = json_decode($this->settings, true);
+        return is_array($decoded) ? $decoded : [];
     }
 
     public function fields(): array
