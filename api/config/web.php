@@ -106,6 +106,8 @@ $config = [
                 'PUT api/v1/master/dashboard/profile' => 'api/v1/master-dashboard/update-profile',
                 'PATCH api/v1/master/dashboard/toggle-slot' => 'api/v1/master-dashboard/toggle-slot',
                 'GET api/v1/master/dashboard/booking-detail' => 'api/v1/master-dashboard/booking-detail',
+                'PATCH api/v1/master/dashboard/confirm-booking' => 'api/v1/master-dashboard/confirm-booking',
+                'PATCH api/v1/master/dashboard/cancel-booking' => 'api/v1/master-dashboard/cancel-booking',
 
                 'GET api/v1/schedule-events/<id:\d+>/stream' => 'api/v1/schedule-event/stream',
 

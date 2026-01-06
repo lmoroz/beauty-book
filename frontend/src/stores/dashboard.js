@@ -110,6 +110,28 @@ export const useDashboardStore = defineStore('dashboard', () => {
     }
   }
 
+  async function confirmBooking(bookingId) {
+    try {
+      const { data } = await api.patch('/master/dashboard/confirm-booking', { booking_id: bookingId })
+      return data
+    } catch (e) {
+      error.value = e.response?.data?.message || e.message
+      throw e
+    }
+  }
+
+  async function cancelBooking(bookingId, reason = null) {
+    try {
+      const payload = { booking_id: bookingId }
+      if (reason) payload.reason = reason
+      const { data } = await api.patch('/master/dashboard/cancel-booking', payload)
+      return data
+    } catch (e) {
+      error.value = e.response?.data?.message || e.message
+      throw e
+    }
+  }
+
   function subscribeSSE(masterId) {
     if (eventSource) {
       eventSource.close()
@@ -167,6 +189,8 @@ export const useDashboardStore = defineStore('dashboard', () => {
     updateProfile,
     toggleSlot,
     fetchBookingDetail,
+    confirmBooking,
+    cancelBooking,
     subscribeSSE,
     unsubscribeSSE,
   }

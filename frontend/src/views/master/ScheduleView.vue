@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { ChevronLeft, ChevronRight, LoaderCircle, X, Phone, Mail, Clock, Calendar, FileText } from 'lucide-vue-next'
+import { ChevronLeft, ChevronRight, LoaderCircle, X, Phone, Mail, Clock, Calendar, FileText, CheckCircle, XCircle } from 'lucide-vue-next'
 import { useDashboardStore } from '../../stores/dashboard.js'
 
 const dashboard = useDashboardStore()
@@ -156,6 +156,37 @@ function closeContextMenu() {
 function closeDetail() {
   showDetail.value = false
   bookingDetail.value = null
+}
+
+const actionLoading = ref(false)
+
+async function confirmBookingAction() {
+  if (!bookingDetail.value || actionLoading.value) return
+  actionLoading.value = true
+  try {
+    await dashboard.confirmBooking(bookingDetail.value.id)
+    bookingDetail.value.status = 'confirmed'
+    await dashboard.fetchSchedule()
+  } catch {
+    // error in store
+  } finally {
+    actionLoading.value = false
+  }
+}
+
+async function cancelBookingAction() {
+  if (!bookingDetail.value || actionLoading.value) return
+  actionLoading.value = true
+  try {
+    await dashboard.cancelBooking(bookingDetail.value.id)
+    bookingDetail.value.status = 'cancelled'
+    await dashboard.fetchSchedule()
+    setTimeout(() => closeDetail(), 800)
+  } catch {
+    // error in store
+  } finally {
+    actionLoading.value = false
+  }
 }
 
 function formatDetailDate(dateStr) {
@@ -361,6 +392,44 @@ onMounted(loadSchedule)
                   Примечания
                 </span>
                 <span class="detail-value">{{ bookingDetail.notes }}</span>
+              </div>
+
+              <div class="detail-divider"></div>
+
+              <div class="detail-row">
+                <span class="detail-label">Статус</span>
+                <span
+                  class="detail-status"
+                  :class="'detail-status--' + bookingDetail.status"
+                >
+                  {{ {
+                    pending: 'Ожидает',
+                    confirmed: 'Подтверждена',
+                    completed: 'Выполнена',
+                    cancelled: 'Отменена',
+                    no_show: 'Не пришёл',
+                  }[bookingDetail.status] || bookingDetail.status }}
+                </span>
+              </div>
+
+              <div v-if="bookingDetail.status !== 'cancelled' && bookingDetail.status !== 'completed'" class="detail-actions">
+                <button
+                  v-if="bookingDetail.status === 'pending'"
+                  class="btn-action btn-action--confirm"
+                  :disabled="actionLoading"
+                  @click="confirmBookingAction"
+                >
+                  <CheckCircle :size="16" :stroke-width="1.5" />
+                  Подтвердить
+                </button>
+                <button
+                  class="btn-action btn-action--cancel"
+                  :disabled="actionLoading"
+                  @click="cancelBookingAction"
+                >
+                  <XCircle :size="16" :stroke-width="1.5" />
+                  Отменить
+                </button>
               </div>
             </div>
 
@@ -697,5 +766,85 @@ onMounted(loadSchedule)
 .ctx-enter-from,
 .ctx-leave-to {
   opacity: 0;
+}
+
+/* Booking status */
+.detail-status {
+  font-family: var(--font-caption);
+  font-size: 13px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.detail-status--pending {
+  background: rgba(255, 193, 7, 0.15);
+  color: #ffc107;
+}
+.detail-status--confirmed {
+  background: rgba(126, 198, 153, 0.15);
+  color: var(--success, #7ec699);
+}
+.detail-status--cancelled {
+  background: rgba(229, 115, 115, 0.15);
+  color: var(--error, #e57373);
+}
+.detail-status--completed {
+  background: rgba(100, 181, 246, 0.15);
+  color: #64b5f6;
+}
+.detail-status--no_show {
+  background: rgba(255, 152, 0, 0.15);
+  color: #ff9800;
+}
+
+/* Action buttons */
+.detail-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-subtle, rgba(255,255,255,0.05));
+}
+
+.btn-action {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-family: var(--font-nav);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.btn-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-action--confirm {
+  background: rgba(126, 198, 153, 0.15);
+  color: var(--success, #7ec699);
+  border-color: rgba(126, 198, 153, 0.3);
+}
+.btn-action--confirm:hover:not(:disabled) {
+  background: rgba(126, 198, 153, 0.25);
+}
+
+.btn-action--cancel {
+  background: rgba(229, 115, 115, 0.1);
+  color: var(--error, #e57373);
+  border-color: rgba(229, 115, 115, 0.25);
+}
+.btn-action--cancel:hover:not(:disabled) {
+  background: rgba(229, 115, 115, 0.2);
 }
 </style>

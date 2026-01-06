@@ -134,11 +134,17 @@ watch(selectedDate, async (date) => {
     loadingSlots.value = true
     selectedSlot.value = null
     try {
-      availableSlots.value = await mastersStore.fetchSchedule(selectedMaster.value.id, date)
+      const svcId = selectedService.value?.id || null
+      availableSlots.value = await mastersStore.fetchSchedule(selectedMaster.value.id, date, svcId)
     } finally {
       loadingSlots.value = false
     }
   }
+})
+
+watch(selectedService, () => {
+  selectedSlot.value = null
+  availableSlots.value = []
 })
 
 async function loadServices(masterId) {
@@ -217,7 +223,15 @@ function close() {
 }
 
 function formatSlotTime(slot) {
-  return slot.start_time?.slice(0, 5) + ' – ' + slot.end_time?.slice(0, 5)
+  const start = slot.start_time?.slice(0, 5)
+  if (selectedService.value?.duration_min) {
+    const [h, m] = slot.start_time.split(':').map(Number)
+    const totalMin = h * 60 + m + selectedService.value.duration_min
+    const endH = String(Math.floor(totalMin / 60)).padStart(2, '0')
+    const endM = String(totalMin % 60).padStart(2, '0')
+    return `${start} – ${endH}:${endM}`
+  }
+  return `${start} – ${slot.end_time?.slice(0, 5)}`
 }
 
 function formatDateReadable(dateStr) {
@@ -258,7 +272,11 @@ async function submitBooking() {
       slideDirection.value = 'prev'
       currentStep.value = 2
       if (selectedDate.value && selectedMaster.value) {
-        availableSlots.value = await mastersStore.fetchSchedule(selectedMaster.value.id, selectedDate.value)
+        availableSlots.value = await mastersStore.fetchSchedule(
+        selectedMaster.value.id,
+        selectedDate.value,
+        selectedService.value?.id || null
+      )
       }
     }
   } finally {

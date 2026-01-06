@@ -46,10 +46,12 @@ export const useMastersStore = defineStore('masters', () => {
     }
   }
 
-  async function fetchSchedule(masterId, date) {
+  async function fetchSchedule(masterId, date, serviceId = null) {
     try {
+      const params = { date }
+      if (serviceId) params.service_id = serviceId
       const { data } = await api.get(`/masters/${masterId}/schedule`, {
-        params: { date },
+        params,
       })
       return data.slots || []
     } catch (e) {

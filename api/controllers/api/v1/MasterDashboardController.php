@@ -440,4 +440,91 @@ class MasterDashboardController extends Controller
             'created_at' => $booking->created_at,
         ];
     }
+
+    public function actionConfirmBooking(): array
+    {
+        $user = $this->authenticateMaster();
+        $masterId = (int) $user->master_id;
+
+        $bookingId = (int) Yii::$app->request->getBodyParam('booking_id');
+        if (!$bookingId) {
+            throw new BadRequestHttpException(
+                Yii::t('booking', 'Parameter "booking_id" is required.')
+            );
+        }
+
+        $booking = Booking::find()
+            ->innerJoinWith('timeSlot')
+            ->where(['bookings.id' => $bookingId, 'time_slots.master_id' => $masterId])
+            ->one();
+
+        if (!$booking) {
+            throw new NotFoundHttpException(
+                Yii::t('booking', 'Booking not found.')
+            );
+        }
+
+        if ($booking->status !== Booking::STATUS_PENDING) {
+            throw new BadRequestHttpException(
+                Yii::t('booking', 'Only pending bookings can be confirmed.')
+            );
+        }
+
+        $booking->status = Booking::STATUS_CONFIRMED;
+        $booking->save(false);
+
+        return ['id' => $booking->id, 'status' => $booking->status];
+    }
+
+    public function actionCancelBooking(): array
+    {
+        $user = $this->authenticateMaster();
+        $masterId = (int) $user->master_id;
+
+        $bookingId = (int) Yii::$app->request->getBodyParam('booking_id');
+        if (!$bookingId) {
+            throw new BadRequestHttpException(
+                Yii::t('booking', 'Parameter "booking_id" is required.')
+            );
+        }
+
+        $booking = Booking::find()
+            ->innerJoinWith('timeSlot')
+            ->where(['bookings.id' => $bookingId, 'time_slots.master_id' => $masterId])
+            ->one();
+
+        if (!$booking) {
+            throw new NotFoundHttpException(
+                Yii::t('booking', 'Booking not found.')
+            );
+        }
+
+        if ($booking->status === Booking::STATUS_CANCELLED) {
+            throw new BadRequestHttpException(
+                Yii::t('booking', 'Booking is already cancelled.')
+            );
+        }
+
+        $slotsToFree = TimeSlot::find()
+            ->where(['booking_id' => $booking->id])
+            ->all();
+
+        if (empty($slotsToFree)) {
+            $slot = $booking->timeSlot;
+            if ($slot) {
+                $slotsToFree = [$slot];
+            }
+        }
+
+        $reason = Yii::$app->request->getBodyParam('reason', 'Cancelled by master');
+        $booking->cancel($reason);
+
+        foreach ($slotsToFree as $slot) {
+            Yii::$app->schedulePublisher->publishSlotFreed(
+                $slot->master_id, $slot->id, $slot->date
+            );
+        }
+
+        return ['id' => $booking->id, 'status' => $booking->status];
+    }
 }

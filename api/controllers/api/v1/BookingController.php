@@ -162,9 +162,21 @@ class BookingController extends ActiveController
                 }
 
                 $transaction->commit();
+            } catch (\yii\db\IntegrityException $e) {
+                $transaction->rollBack();
+                Yii::error('Booking integrity error: ' . $e->getMessage());
+                throw new BadRequestHttpException(
+                    Yii::t('booking', 'This time slot is no longer available. Please choose another one.')
+                );
             } catch (\Throwable $e) {
                 $transaction->rollBack();
-                throw $e;
+                if ($e instanceof BadRequestHttpException || $e instanceof ServerErrorHttpException) {
+                    throw $e;
+                }
+                Yii::error('Booking error: ' . $e->getMessage());
+                throw new ServerErrorHttpException(
+                    Yii::t('booking', 'An unexpected error occurred. Please try again.')
+                );
             }
 
             Yii::$app->queue->push('notifications', [
