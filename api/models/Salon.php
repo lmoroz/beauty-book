@@ -2,6 +2,7 @@
 
 namespace app\models;
 
+use Yii;
 use yii\db\ActiveRecord;
 
 /**
@@ -29,6 +30,19 @@ class Salon extends ActiveRecord
     /** @var string used by admin form */
     public $chat_greeting;
 
+    /** @var string */
+    public $llm_base_url;
+    /** @var string */
+    public $llm_api_key;
+    /** @var string */
+    public $llm_model;
+    /** @var float|string */
+    public $llm_temperature;
+    /** @var int|string */
+    public $llm_max_tokens;
+    /** @var int|string */
+    public $llm_timeout;
+
     public static function tableName(): string
     {
         return '{{%salons}}';
@@ -46,7 +60,7 @@ class Salon extends ActiveRecord
             [['phone'], 'string', 'max' => 20],
             [['email'], 'email'],
             [['description'], 'string'],
-            [['working_hours', 'settings', 'chat_greeting'], 'safe'],
+            [['working_hours', 'settings', 'chat_greeting', 'llm_base_url', 'llm_api_key', 'llm_model', 'llm_temperature', 'llm_max_tokens', 'llm_timeout'], 'safe'],
             [['is_active'], 'boolean'],
         ];
     }
@@ -56,6 +70,12 @@ class Salon extends ActiveRecord
         parent::afterFind();
         $data = $this->getSettingsArray();
         $this->chat_greeting = isset($data['chat_greeting']) ? $data['chat_greeting'] : '';
+        $this->llm_base_url = isset($data['llm_base_url']) ? $data['llm_base_url'] : '';
+        $this->llm_api_key = isset($data['llm_api_key']) ? $data['llm_api_key'] : '';
+        $this->llm_model = isset($data['llm_model']) ? $data['llm_model'] : '';
+        $this->llm_temperature = isset($data['llm_temperature']) ? $data['llm_temperature'] : '';
+        $this->llm_max_tokens = isset($data['llm_max_tokens']) ? $data['llm_max_tokens'] : '';
+        $this->llm_timeout = isset($data['llm_timeout']) ? $data['llm_timeout'] : '';
     }
 
     public function beforeSave($insert)
@@ -64,11 +84,26 @@ class Salon extends ActiveRecord
             return false;
         }
         $data = $this->getSettingsArray();
+
         if ($this->chat_greeting !== null && $this->chat_greeting !== '') {
             $data['chat_greeting'] = $this->chat_greeting;
         } else {
             unset($data['chat_greeting']);
         }
+
+        $llmFields = ['llm_base_url', 'llm_model', 'llm_temperature', 'llm_max_tokens', 'llm_timeout'];
+        foreach ($llmFields as $field) {
+            if ($this->$field !== null && $this->$field !== '') {
+                $data[$field] = $this->$field;
+            } else {
+                unset($data[$field]);
+            }
+        }
+
+        if ($this->llm_api_key !== null && $this->llm_api_key !== '' && !$this->isMaskedKey($this->llm_api_key)) {
+            $data['llm_api_key'] = $this->llm_api_key;
+        }
+
         $this->settings = !empty($data) ? json_encode($data, JSON_UNESCAPED_UNICODE) : null;
         return true;
     }
@@ -85,9 +120,101 @@ class Salon extends ActiveRecord
     }
 
     /**
+     * @return string
+     */
+    public function getMaskedApiKey()
+    {
+        $data = $this->getSettingsArray();
+        $key = isset($data['llm_api_key']) ? $data['llm_api_key'] : '';
+        if (empty($key)) {
+            return '';
+        }
+        $len = strlen($key);
+        if ($len <= 8) {
+            return str_repeat('•', $len);
+        }
+        return substr($key, 0, 4) . str_repeat('•', $len - 8) . substr($key, -4);
+    }
+
+    /**
+     * @param string $value
+     * @return bool
+     */
+    private function isMaskedKey($value)
+    {
+        return (bool) preg_match('/•/', $value);
+    }
+
+    /**
+     * @return string
+     */
+    public function getEffectiveLlmBaseUrl()
+    {
+        $data = $this->getSettingsArray();
+        return isset($data['llm_base_url']) && $data['llm_base_url'] !== ''
+            ? $data['llm_base_url']
+            : Yii::$app->llm->baseUrl;
+    }
+
+    /**
+     * @return string
+     */
+    public function getEffectiveLlmApiKey()
+    {
+        $data = $this->getSettingsArray();
+        return isset($data['llm_api_key']) && $data['llm_api_key'] !== ''
+            ? $data['llm_api_key']
+            : Yii::$app->llm->apiKey;
+    }
+
+    /**
+     * @return string
+     */
+    public function getEffectiveLlmModel()
+    {
+        $data = $this->getSettingsArray();
+        return isset($data['llm_model']) && $data['llm_model'] !== ''
+            ? $data['llm_model']
+            : Yii::$app->llm->model;
+    }
+
+    /**
+     * @return float
+     */
+    public function getEffectiveLlmTemperature()
+    {
+        $data = $this->getSettingsArray();
+        return isset($data['llm_temperature']) && $data['llm_temperature'] !== ''
+            ? (float) $data['llm_temperature']
+            : Yii::$app->llm->temperature;
+    }
+
+    /**
+     * @return int
+     */
+    public function getEffectiveLlmMaxTokens()
+    {
+        $data = $this->getSettingsArray();
+        return isset($data['llm_max_tokens']) && $data['llm_max_tokens'] !== ''
+            ? (int) $data['llm_max_tokens']
+            : Yii::$app->llm->maxTokens;
+    }
+
+    /**
+     * @return int
+     */
+    public function getEffectiveLlmTimeout()
+    {
+        $data = $this->getSettingsArray();
+        return isset($data['llm_timeout']) && $data['llm_timeout'] !== ''
+            ? (int) $data['llm_timeout']
+            : Yii::$app->llm->timeout;
+    }
+
+    /**
      * @return array
      */
-    private function getSettingsArray()
+    public function getSettingsArray()
     {
         if (empty($this->settings)) {
             return [];

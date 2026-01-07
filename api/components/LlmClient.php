@@ -39,6 +39,33 @@ class LlmClient extends Component
     {
         parent::init();
 
+        try {
+            $salon = \app\models\Salon::find()->where(['is_active' => 1])->limit(1)->one();
+            if ($salon) {
+                $data = $salon->getSettingsArray();
+                if (!empty($data['llm_base_url'])) {
+                    $this->baseUrl = $data['llm_base_url'];
+                }
+                if (!empty($data['llm_api_key'])) {
+                    $this->apiKey = $data['llm_api_key'];
+                }
+                if (!empty($data['llm_model'])) {
+                    $this->model = $data['llm_model'];
+                }
+                if (isset($data['llm_temperature']) && $data['llm_temperature'] !== '') {
+                    $this->temperature = (float) $data['llm_temperature'];
+                }
+                if (isset($data['llm_max_tokens']) && $data['llm_max_tokens'] !== '') {
+                    $this->maxTokens = (int) $data['llm_max_tokens'];
+                }
+                if (isset($data['llm_timeout']) && $data['llm_timeout'] !== '') {
+                    $this->timeout = (int) $data['llm_timeout'];
+                }
+            }
+        } catch (\Throwable $e) {
+            Yii::warning('Failed to load LLM settings from salon: ' . $e->getMessage());
+        }
+
         if (empty($this->apiKey)) {
             throw new InvalidConfigException('LlmClient::apiKey must be set.');
         }

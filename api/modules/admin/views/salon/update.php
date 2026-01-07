@@ -49,8 +49,83 @@ $this->title = 'Настройки салона';
             <textarea id="f-greeting" name="Salon[chat_greeting]" rows="3" placeholder="<?= Html::encode(\app\models\Salon::DEFAULT_CHAT_GREETING) ?>"><?= Html::encode($model->chat_greeting) ?></textarea>
             <small style="color: #888;">Первое сообщение, которое видит клиент при открытии чата. Оставьте пустым для текста по умолчанию.</small>
         </div>
+
+        <h3 style="margin-top: 24px;">LLM API</h3>
+        <p style="color: #888; font-size: 13px; margin-bottom: 16px;">
+            Настройки подключения к AI-провайдеру. Пустые поля берут значения из конфигурации сервера.
+        </p>
+
+        <div class="form-group">
+            <label for="f-llm-base-url">Base URL</label>
+            <input id="f-llm-base-url" type="text" name="Salon[llm_base_url]"
+                   value="<?= Html::encode($model->llm_base_url) ?>"
+                   placeholder="<?= Html::encode(Yii::$app->llm->baseUrl) ?>">
+        </div>
+        <div class="form-group">
+            <label for="f-llm-api-key">API Key</label>
+            <div style="position: relative;">
+                <input id="f-llm-api-key" type="password" name="Salon[llm_api_key]"
+                       value="<?= Html::encode($model->getMaskedApiKey()) ?>"
+                       placeholder="Не задан — используется серверный"
+                       autocomplete="off">
+                <button type="button" id="toggle-api-key"
+                        style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 16px; color: #888; padding: 4px;"
+                        title="Показать/скрыть">👁</button>
+            </div>
+            <small style="color: #888;">Для изменения ключа введите новое значение целиком. Текущий ключ замаскирован.</small>
+        </div>
+        <div class="form-group">
+            <label for="f-llm-model">Модель</label>
+            <input id="f-llm-model" type="text" name="Salon[llm_model]"
+                   value="<?= Html::encode($model->llm_model) ?>"
+                   placeholder="<?= Html::encode(Yii::$app->llm->model) ?>">
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+            <div class="form-group">
+                <label for="f-llm-temp">Temperature</label>
+                <input id="f-llm-temp" type="number" step="0.1" min="0" max="2" name="Salon[llm_temperature]"
+                       value="<?= Html::encode($model->llm_temperature) ?>"
+                       placeholder="<?= Yii::$app->llm->temperature ?>">
+            </div>
+            <div class="form-group">
+                <label for="f-llm-tokens">Max Tokens</label>
+                <input id="f-llm-tokens" type="number" step="1" min="1" max="128000" name="Salon[llm_max_tokens]"
+                       value="<?= Html::encode($model->llm_max_tokens) ?>"
+                       placeholder="<?= Yii::$app->llm->maxTokens ?>">
+            </div>
+            <div class="form-group">
+                <label for="f-llm-timeout">Timeout (сек)</label>
+                <input id="f-llm-timeout" type="number" step="1" min="5" max="120" name="Salon[llm_timeout]"
+                       value="<?= Html::encode($model->llm_timeout) ?>"
+                       placeholder="<?= Yii::$app->llm->timeout ?>">
+            </div>
+        </div>
+
         <div class="actions">
             <button type="submit" class="btn btn-primary">Сохранить</button>
         </div>
     </div>
 </form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var input = document.getElementById('f-llm-api-key');
+    var btn = document.getElementById('toggle-api-key');
+    btn.addEventListener('click', function () {
+        if (input.type === 'password') {
+            input.type = 'text';
+            btn.textContent = '🔒';
+        } else {
+            input.type = 'password';
+            btn.textContent = '👁';
+        }
+    });
+    input.addEventListener('focus', function () {
+        if (input.value && /•/.test(input.value)) {
+            input.value = '';
+            input.type = 'text';
+            btn.textContent = '🔒';
+        }
+    });
+});
+</script>
