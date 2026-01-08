@@ -131,4 +131,75 @@ class TimeSlot extends ActiveRecord
 
         return $slots;
     }
+
+    /**
+     * @param int $masterId
+     * @param string $weekStart Y-m-d (Monday)
+     * @param array|null $workingHours Salon working_hours structure
+     * @return int Number of slots created
+     */
+    public static function generateWeekSlots($masterId, $weekStart, $workingHours = null)
+    {
+        if ($workingHours === null) {
+            $salon = Salon::find()->where(['is_active' => 1])->limit(1)->one();
+            if (!$salon) {
+                return 0;
+            }
+            $wh = $salon->working_hours;
+            if (is_string($wh)) {
+                $wh = json_decode($wh, true);
+            }
+            $workingHours = is_array($wh) ? $wh : [];
+        }
+
+        $dayKeys = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+        $created = 0;
+        $db = \Yii::$app->db;
+
+        for ($d = 0; $d < 7; $d++) {
+            $date = date('Y-m-d', strtotime($weekStart . " +{$d} days"));
+            $dayKey = $dayKeys[$d];
+
+            if (!isset($workingHours[$dayKey]) || empty($workingHours[$dayKey])) {
+                continue;
+            }
+
+            $dayConfig = $workingHours[$dayKey];
+            if (!isset($dayConfig['open'], $dayConfig['close'])) {
+                continue;
+            }
+
+            $openHour = (int) substr($dayConfig['open'], 0, 2);
+            $closeHour = (int) substr($dayConfig['close'], 0, 2);
+
+            if ($closeHour <= $openHour) {
+                continue;
+            }
+
+            $existing = static::find()
+                ->where(['master_id' => $masterId, 'date' => $date])
+                ->count();
+
+            if ($existing > 0) {
+                continue;
+            }
+
+            for ($h = $openHour; $h < $closeHour; $h++) {
+                $startTime = sprintf('%02d:00:00', $h);
+                $endTime = sprintf('%02d:00:00', $h + 1);
+
+                $db->createCommand()->insert(static::tableName(), [
+                    'master_id' => $masterId,
+                    'date' => $date,
+                    'start_time' => $startTime,
+                    'end_time' => $endTime,
+                    'status' => self::STATUS_FREE,
+                ])->execute();
+
+                $created++;
+            }
+        }
+
+        return $created;
+    }
 }

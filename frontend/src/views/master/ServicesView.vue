@@ -216,4 +216,32 @@ onMounted(() => {
   color: var(--text-muted, #777);
   border: 1px solid var(--border-subtle, rgba(255,255,255,0.05));
 }
+
+/* ═══ MOBILE ═══ */
+@media (max-width: 768px) {
+  .services-view__header h1 {
+    font-size: 24px;
+  }
+
+  .services-view__header {
+    margin-bottom: 24px;
+  }
+
+  .service-card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .service-card__info h3 {
+    font-size: 16px;
+  }
+
+  .service-card__meta {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+}
 </style>

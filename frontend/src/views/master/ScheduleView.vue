@@ -449,6 +449,8 @@ onMounted(loadSchedule)
   justify-content: space-between;
   align-items: center;
   margin-bottom: 32px;
+  flex-wrap: wrap;
+  gap: 16px;
 }
 
 .schedule-view__header h1 {
@@ -496,12 +498,14 @@ onMounted(loadSchedule)
 
 .schedule-grid {
   display: grid;
-  grid-template-columns: 80px repeat(7, 1fr);
+  grid-template-columns: 60px repeat(7, minmax(100px, 1fr));
   gap: 1px;
   background: var(--border-subtle, rgba(255,255,255,0.05));
   border: 1px solid var(--border-subtle, rgba(255,255,255,0.05));
   border-radius: 16px;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 .schedule-header,
@@ -519,7 +523,10 @@ onMounted(loadSchedule)
 }
 
 .schedule-header--corner {
-  background: transparent;
+  background: #111111;
+  position: sticky;
+  left: 0;
+  z-index: 2;
 }
 
 .schedule-header--today {
@@ -540,6 +547,9 @@ onMounted(loadSchedule)
   display: flex;
   align-items: flex-start;
   justify-content: flex-end;
+  position: sticky;
+  left: 0;
+  z-index: 2;
 }
 
 .schedule-cell--weekend {
@@ -555,6 +565,9 @@ onMounted(loadSchedule)
   font-family: var(--font-caption);
   transition: opacity 0.15s, transform 0.15s;
   user-select: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .slot:hover {
@@ -846,5 +859,70 @@ onMounted(loadSchedule)
 }
 .btn-action--cancel:hover:not(:disabled) {
   background: rgba(229, 115, 115, 0.2);
+}
+
+/* ═══ MOBILE ═══ */
+@media (max-width: 768px) {
+  .schedule-view__header h1 {
+    font-size: 24px;
+    width: 100%;
+  }
+
+  .schedule-view__nav {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .schedule-view__week-label {
+    font-size: 16px;
+    min-width: 140px;
+  }
+
+  .btn-sm {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+
+  .schedule-grid {
+    grid-template-columns: 50px repeat(7, minmax(80px, 1fr));
+  }
+
+  .schedule-header,
+  .schedule-cell {
+    padding: 10px 6px;
+  }
+
+  .schedule-header {
+    font-size: 12px;
+  }
+
+  .schedule-time {
+    padding: 10px 6px;
+    font-size: 11px;
+  }
+
+  .slot {
+    padding: 4px 6px;
+    font-size: 10px;
+  }
+
+  .ctx-menu {
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%);
+  }
+
+  .detail-modal {
+    width: 95vw;
+    padding: 24px 16px;
+  }
+
+  .detail-modal__content h2 {
+    font-size: 20px;
+  }
+
+  .detail-actions {
+    flex-direction: column;
+  }
 }
 </style>

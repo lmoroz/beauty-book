@@ -43,6 +43,15 @@ class Salon extends ActiveRecord
     /** @var int|string */
     public $llm_timeout;
 
+    /** @var string[] Working hours virtual properties */
+    public $wh_mon_open, $wh_mon_close, $wh_mon_closed;
+    public $wh_tue_open, $wh_tue_close, $wh_tue_closed;
+    public $wh_wed_open, $wh_wed_close, $wh_wed_closed;
+    public $wh_thu_open, $wh_thu_close, $wh_thu_closed;
+    public $wh_fri_open, $wh_fri_close, $wh_fri_closed;
+    public $wh_sat_open, $wh_sat_close, $wh_sat_closed;
+    public $wh_sun_open, $wh_sun_close, $wh_sun_closed;
+
     public static function tableName(): string
     {
         return '{{%salons}}';
@@ -60,7 +69,15 @@ class Salon extends ActiveRecord
             [['phone'], 'string', 'max' => 20],
             [['email'], 'email'],
             [['description'], 'string'],
-            [['working_hours', 'settings', 'chat_greeting', 'llm_base_url', 'llm_api_key', 'llm_model', 'llm_temperature', 'llm_max_tokens', 'llm_timeout'], 'safe'],
+            [['working_hours', 'settings', 'chat_greeting', 'llm_base_url', 'llm_api_key', 'llm_model', 'llm_temperature', 'llm_max_tokens', 'llm_timeout',
+                'wh_mon_open', 'wh_mon_close', 'wh_mon_closed',
+                'wh_tue_open', 'wh_tue_close', 'wh_tue_closed',
+                'wh_wed_open', 'wh_wed_close', 'wh_wed_closed',
+                'wh_thu_open', 'wh_thu_close', 'wh_thu_closed',
+                'wh_fri_open', 'wh_fri_close', 'wh_fri_closed',
+                'wh_sat_open', 'wh_sat_close', 'wh_sat_closed',
+                'wh_sun_open', 'wh_sun_close', 'wh_sun_closed',
+            ], 'safe'],
             [['is_active'], 'boolean'],
         ];
     }
@@ -76,7 +93,8 @@ class Salon extends ActiveRecord
         $this->llm_temperature = isset($data['llm_temperature']) ? $data['llm_temperature'] : '';
         $this->llm_max_tokens = isset($data['llm_max_tokens']) ? $data['llm_max_tokens'] : '';
         $this->llm_timeout = isset($data['llm_timeout']) ? $data['llm_timeout'] : '';
-    }
+
+        $this->loadWorkingHours();    }
 
     public function beforeSave($insert)
     {
@@ -105,7 +123,55 @@ class Salon extends ActiveRecord
         }
 
         $this->settings = !empty($data) ? json_encode($data, JSON_UNESCAPED_UNICODE) : null;
+
+        $this->saveWorkingHours();
+
         return true;
+    }
+
+    private static $dayKeys = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+
+    private function loadWorkingHours()
+    {
+        $wh = $this->working_hours;
+        if (is_string($wh)) {
+            $wh = json_decode($wh, true);
+        }
+        if (!is_array($wh)) {
+            $wh = [];
+        }
+        foreach (self::$dayKeys as $day) {
+            $openProp = "wh_{$day}_open";
+            $closeProp = "wh_{$day}_close";
+            $closedProp = "wh_{$day}_closed";
+            if (isset($wh[$day]) && is_array($wh[$day])) {
+                $this->$openProp = isset($wh[$day]['open']) ? $wh[$day]['open'] : '';
+                $this->$closeProp = isset($wh[$day]['close']) ? $wh[$day]['close'] : '';
+                $this->$closedProp = 0;
+            } else {
+                $this->$openProp = '';
+                $this->$closeProp = '';
+                $this->$closedProp = 1;
+            }
+        }
+    }
+
+    private function saveWorkingHours()
+    {
+        $wh = [];
+        foreach (self::$dayKeys as $day) {
+            $closedProp = "wh_{$day}_closed";
+            $openProp = "wh_{$day}_open";
+            $closeProp = "wh_{$day}_close";
+            if ($this->$closedProp) {
+                $wh[$day] = null;
+            } else {
+                $open = $this->$openProp ?: '09:00';
+                $close = $this->$closeProp ?: '21:00';
+                $wh[$day] = ['open' => $open, 'close' => $close];
+            }
+        }
+        $this->working_hours = json_encode($wh, JSON_UNESCAPED_UNICODE);
     }
 
     /**

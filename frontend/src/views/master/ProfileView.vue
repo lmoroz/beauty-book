@@ -247,4 +247,45 @@ onMounted(async () => {
   margin-top: 12px;
   font-size: 14px;
 }
+
+/* ═══ MOBILE ═══ */
+@media (max-width: 768px) {
+  .profile-view h1 {
+    font-size: 24px;
+    margin-bottom: 24px;
+  }
+
+  .profile-view__card {
+    padding: 20px 16px;
+    border-radius: 16px;
+  }
+
+  .profile-view__hero {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+
+  .profile-view__hero h2 {
+    font-size: 22px;
+  }
+
+  .profile-view__specs {
+    justify-content: center;
+  }
+
+  .profile-view__row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .profile-view__actions {
+    justify-content: stretch;
+  }
+
+  .profile-view__actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
 </style>

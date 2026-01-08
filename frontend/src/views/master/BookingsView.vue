@@ -267,4 +267,47 @@ onMounted(loadBookings)
   color: var(--text-muted, #777);
   border: 1px solid var(--border-subtle, rgba(255,255,255,0.05));
 }
+
+/* ═══ MOBILE ═══ */
+@media (max-width: 768px) {
+  .bookings-view__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .bookings-view__header h1 {
+    font-size: 24px;
+  }
+
+  .bookings-view__filters {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .booking-card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .booking-card__main {
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .booking-card__client h3 {
+    font-size: 16px;
+  }
+
+  .booking-card__meta {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+}
 </style>

@@ -217,6 +217,17 @@ class MasterDashboardController extends Controller
             ->orderBy(['date' => SORT_ASC, 'start_time' => SORT_ASC])
             ->all();
 
+        if (empty($slots)) {
+            TimeSlot::generateWeekSlots($masterId, $weekStart);
+
+            $slots = TimeSlot::find()
+                ->where(['master_id' => $masterId])
+                ->andWhere(['>=', 'date', $weekStart])
+                ->andWhere(['<=', 'date', $weekEnd])
+                ->orderBy(['date' => SORT_ASC, 'start_time' => SORT_ASC])
+                ->all();
+        }
+
         $bookingsBySlot = [];
         $slotIds = array_map(function ($s) { return $s->id; }, $slots);
         $bookingIds = array_filter(array_map(function ($s) { return $s->booking_id; }, $slots));

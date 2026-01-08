@@ -42,6 +42,59 @@ $this->title = 'Настройки салона';
             </select>
         </div>
 
+        <h3 style="margin-top: 24px;">Рабочие часы</h3>
+        <p style="color: #888; font-size: 13px; margin-bottom: 12px;">
+            Расписание работы салона. При просмотре расписания мастером слоты генерируются автоматически.
+        </p>
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
+            <thead>
+                <tr style="text-align: left; border-bottom: 1px solid #ddd;">
+                    <th style="padding: 6px 8px; width: 80px;">День</th>
+                    <th style="padding: 6px 8px;">Открытие</th>
+                    <th style="padding: 6px 8px;">Закрытие</th>
+                    <th style="padding: 6px 8px; width: 80px;">Выходной</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                $dayLabels = [
+                    'mon' => 'Пн', 'tue' => 'Вт', 'wed' => 'Ср',
+                    'thu' => 'Чт', 'fri' => 'Пт', 'sat' => 'Сб', 'sun' => 'Вс',
+                ];
+                foreach ($dayLabels as $key => $label):
+                    $openProp = "wh_{$key}_open";
+                    $closeProp = "wh_{$key}_close";
+                    $closedProp = "wh_{$key}_closed";
+                    $isClosed = (bool) $model->$closedProp;
+                ?>
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 6px 8px; font-weight: 600;"><?= $label ?></td>
+                    <td style="padding: 6px 8px;">
+                        <input type="time" name="Salon[<?= $openProp ?>]"
+                               value="<?= Html::encode($model->$openProp) ?>"
+                               id="f-<?= $openProp ?>"
+                               style="width: 120px;"
+                               <?= $isClosed ? 'disabled' : '' ?>>
+                    </td>
+                    <td style="padding: 6px 8px;">
+                        <input type="time" name="Salon[<?= $closeProp ?>]"
+                               value="<?= Html::encode($model->$closeProp) ?>"
+                               id="f-<?= $closeProp ?>"
+                               style="width: 120px;"
+                               <?= $isClosed ? 'disabled' : '' ?>>
+                    </td>
+                    <td style="padding: 6px 8px; text-align: center;">
+                        <input type="hidden" name="Salon[<?= $closedProp ?>]" value="0" id="h-<?= $closedProp ?>">
+                        <input type="checkbox" name="Salon[<?= $closedProp ?>]" value="1"
+                               id="f-<?= $closedProp ?>"
+                               <?= $isClosed ? 'checked' : '' ?>
+                               onchange="toggleDay('<?= $key ?>')">
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+
         <h3 style="margin-top: 24px;">Чат-бот</h3>
 
         <div class="form-group">
@@ -108,6 +161,14 @@ $this->title = 'Настройки салона';
 </form>
 
 <script>
+function toggleDay(day) {
+    var cb = document.getElementById('f-wh_' + day + '_closed');
+    var openInput = document.getElementById('f-wh_' + day + '_open');
+    var closeInput = document.getElementById('f-wh_' + day + '_close');
+    openInput.disabled = cb.checked;
+    closeInput.disabled = cb.checked;
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     var input = document.getElementById('f-llm-api-key');
     var btn = document.getElementById('toggle-api-key');
@@ -125,6 +186,14 @@ document.addEventListener('DOMContentLoaded', function () {
             input.value = '';
             input.type = 'text';
             btn.textContent = '🔒';
+        }
+    });
+
+    // Re-enable disabled inputs on submit so values get posted
+    document.querySelector('form').addEventListener('submit', function () {
+        var inputs = this.querySelectorAll('input[disabled]');
+        for (var i = 0; i < inputs.length; i++) {
+            inputs[i].disabled = false;
         }
     });
 });
