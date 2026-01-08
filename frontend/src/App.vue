@@ -4,6 +4,7 @@ import { RouterView, useRoute } from 'vue-router'
 import AppHeader from './components/layout/AppHeader.vue'
 import AppFooter from './components/layout/AppFooter.vue'
 import ChatWidget from './components/chat/ChatWidget.vue'
+import DemoBanner from './components/layout/DemoBanner.vue'
 
 const route = useRoute()
 
@@ -13,6 +14,7 @@ const showHeaderFooter = computed(() => !isMasterArea.value)
 </script>
 
 <template>
+  <DemoBanner />
   <AppHeader v-if="showHeaderFooter" />
 
   <RouterView />

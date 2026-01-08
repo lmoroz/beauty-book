@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch, onMounted, nextTick } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { X, ChevronLeft, ChevronRight, Check, Calendar, Clock, User, Loader2 } from 'lucide-vue-next'
 import { useMastersStore } from '../../stores/masters.js'
 import { useBookingsStore } from '../../stores/bookings.js'
@@ -13,6 +13,9 @@ const emit = defineEmits(['update:modelValue', 'booked'])
 
 const mastersStore = useMastersStore()
 const bookingsStore = useBookingsStore()
+
+let sseSource = null
+const slotJustTaken = ref(null)
 
 const STEPS = [
   { id: 'master', label: 'Мастер', icon: User },
@@ -107,11 +110,60 @@ onMounted(() => {
   }
 })
 
+function connectSSE(masterId) {
+  disconnectSSE()
+  const baseUrl = (import.meta.env.VITE_API_URL || '/api/v1').replace(/\/api\/v1\/?$/, '')
+  const url = `${baseUrl}/api/v1/schedule-events/${masterId}/stream`
+  sseSource = new EventSource(url)
+
+  sseSource.addEventListener('schedule_update', (event) => {
+    try {
+      const data = JSON.parse(event.data)
+      if (data.action === 'slot_booked' && data.slot_id) {
+        if (selectedSlot.value?.id === data.slot_id) {
+          selectedSlot.value = null
+          slotJustTaken.value = data.slot_id
+          setTimeout(() => { slotJustTaken.value = null }, 4000)
+        }
+        availableSlots.value = availableSlots.value.filter(s => s.id !== data.slot_id)
+      }
+      if (data.action === 'slot_freed' && data.slot_id && selectedDate.value && selectedMaster.value) {
+        if (data.date === selectedDate.value) {
+          mastersStore.fetchSchedule(
+            selectedMaster.value.id,
+            selectedDate.value,
+            selectedService.value?.id || null
+          ).then(slots => { availableSlots.value = slots })
+        }
+      }
+    } catch {}
+  })
+
+  sseSource.onerror = () => {
+    sseSource?.close()
+    setTimeout(() => {
+      if (selectedMaster.value) connectSSE(selectedMaster.value.id)
+    }, 5000)
+  }
+}
+
+function disconnectSSE() {
+  if (sseSource) {
+    sseSource.close()
+    sseSource = null
+  }
+}
+
+onUnmounted(() => {
+  disconnectSSE()
+})
+
 watch(() => props.modelValue, (open) => {
   if (open) {
     currentStep.value = 0
     bookingResult.value = null
     bookingError.value = null
+    slotJustTaken.value = null
     selectedService.value = null
     selectedDate.value = null
     selectedSlot.value = null
@@ -121,10 +173,13 @@ watch(() => props.modelValue, (open) => {
       selectedMaster.value = props.preselectedMaster
       currentStep.value = 1
       loadServices(props.preselectedMaster.id)
+      connectSSE(props.preselectedMaster.id)
     } else {
       selectedMaster.value = null
       if (!mastersStore.masters.length) mastersStore.fetchMasters()
     }
+  } else {
+    disconnectSSE()
   }
   document.body.style.overflow = open ? 'hidden' : ''
 })
@@ -162,6 +217,7 @@ function selectMaster(master) {
   selectedService.value = null
   masterServices.value = []
   loadServices(master.id)
+  connectSSE(master.id)
 }
 
 function selectDate(dateStr) {
@@ -219,6 +275,7 @@ function goBack() {
 }
 
 function close() {
+  disconnectSSE()
   emit('update:modelValue', false)
 }
 
@@ -413,20 +470,27 @@ async function submitBooking() {
                 <!-- Slots -->
                 <div v-if="selectedDate" class="bw__slots-section">
                   <p class="bw__slots-date">{{ formatDateReadable(selectedDate) }}</p>
+                  <Transition name="slot-taken">
+                    <p v-if="slotJustTaken" class="bw__slot-taken-notice">
+                      Выбранное время только что забронировали. Выберите другое.
+                    </p>
+                  </Transition>
                   <div v-if="loadingSlots" class="bw__loading">
                     <Loader2 :size="24" :stroke-width="1.5" class="bw__spinner" />
                     <span>Загрузка слотов…</span>
                   </div>
                   <div v-else-if="availableSlots.length" class="bw__slots-grid">
-                    <button
-                      v-for="slot in availableSlots"
-                      :key="slot.id"
-                      class="slot-pill"
-                      :class="{ 'slot-pill--selected': selectedSlot?.id === slot.id }"
-                      @click="selectedSlot = slot"
-                    >
-                      {{ formatSlotTime(slot) }}
-                    </button>
+                    <TransitionGroup name="slot-fade">
+                      <button
+                        v-for="slot in availableSlots"
+                        :key="slot.id"
+                        class="slot-pill"
+                        :class="{ 'slot-pill--selected': selectedSlot?.id === slot.id }"
+                        @click="selectedSlot = slot"
+                      >
+                        {{ formatSlotTime(slot) }}
+                      </button>
+                    </TransitionGroup>
                   </div>
                   <p v-else class="bw__empty">На эту дату нет свободных слотов</p>
                 </div>
@@ -1147,5 +1211,37 @@ async function submitBooking() {
   .bw__steps {
     gap: 12px;
   }
+}
+
+/* ─── Slot real-time transitions ─── */
+.slot-fade-enter-active {
+  transition: all 0.3s var(--ease-out);
+}
+.slot-fade-leave-active {
+  transition: all 0.4s var(--ease-out);
+}
+.slot-fade-enter-from {
+  opacity: 0;
+  transform: scale(0.85);
+}
+.slot-fade-leave-to {
+  opacity: 0;
+  transform: scale(0.75);
+}
+
+.slot-taken-enter-active { transition: all 0.3s var(--ease-out); }
+.slot-taken-leave-active { transition: all 0.3s var(--ease-out); }
+.slot-taken-enter-from { opacity: 0; transform: translateY(-8px); }
+.slot-taken-leave-to { opacity: 0; transform: translateY(-8px); }
+
+.bw__slot-taken-notice {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--accent-gold, #DAB97B);
+  background: rgba(200, 169, 110, 0.1);
+  border: 1px solid rgba(200, 169, 110, 0.25);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
 }
 </style>
