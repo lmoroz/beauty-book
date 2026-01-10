@@ -80,7 +80,7 @@ class ChatController extends Controller
         $conversationId = $request->getBodyParam('conversation_id', '');
         $clientHistory = $request->getBodyParam('history', []);
 
-        if (empty($conversationId)) {
+        if (empty($conversationId) || !preg_match('/^[a-f0-9]{1,64}$/i', $conversationId)) {
             $conversationId = $this->generateConversationId();
         }
 

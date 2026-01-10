@@ -1,6 +1,6 @@
 <script setup>
 import { ref, watch, nextTick } from 'vue'
-import { X, ChevronDown } from 'lucide-vue-next'
+import { X, ChevronDown, RotateCcw, Send } from 'lucide-vue-next'
 import chatAvatarUrl from '../../assets/images/chat_avatar.png'
 import { useChat } from '../../composables/useChat.js'
 
@@ -9,7 +9,7 @@ const userInput = ref('')
 const messagesEl = ref(null)
 const initialized = ref(false)
 
-const { messages, loading, getGreeting, fetchGreeting } = useChat()
+const { messages, loading, getGreeting, fetchGreeting, sendMessage, resetConversation } = useChat()
 
 async function openChat() {
   expanded.value = true
@@ -35,12 +35,36 @@ function scrollToBottom() {
   }
 }
 
+async function handleSend() {
+  const text = userInput.value.trim()
+  if (!text || loading.value) return
+
+  userInput.value = ''
+  await nextTick()
+  scrollToBottom()
+
+  await sendMessage(text)
+  await nextTick()
+  scrollToBottom()
+}
+
+function handleReset() {
+  resetConversation()
+  initialized.value = false
+  openChat()
+}
+
 watch(expanded, (open) => {
   if (open) {
     document.addEventListener('keydown', onKeydown)
   } else {
     document.removeEventListener('keydown', onKeydown)
   }
+})
+
+watch(() => messages.value.length, async () => {
+  await nextTick()
+  scrollToBottom()
 })
 
 function onKeydown(e) {
@@ -77,6 +101,9 @@ function onKeydown(e) {
             </div>
           </div>
           <div class="chat-window__controls">
+            <button type="button" aria-label="Новый диалог" title="Новый диалог" @click="handleReset">
+              <RotateCcw :size="14" :stroke-width="1.5" />
+            </button>
             <button type="button" aria-label="Свернуть чат" @click="closeChat">
               <ChevronDown :size="16" :stroke-width="1.5" />
             </button>
@@ -100,14 +127,23 @@ function onKeydown(e) {
           </article>
         </div>
 
-        <form class="chat-window__input" @submit.prevent>
+        <form class="chat-window__input" @submit.prevent="handleSend">
           <input
             v-model="userInput"
             type="text"
             placeholder="Введите сообщение..."
             aria-label="Сообщение"
+            :disabled="loading"
+            @keydown.enter.prevent="handleSend"
           >
-          <button class="btn btn-gold" type="submit">Отправить</button>
+          <button
+            class="btn btn-gold btn-send"
+            type="submit"
+            :disabled="loading || !userInput.trim()"
+            aria-label="Отправить"
+          >
+            <Send :size="18" :stroke-width="1.5" />
+          </button>
         </form>
       </section>
     </Transition>
@@ -283,6 +319,9 @@ function onKeydown(e) {
   border-radius: 15px;
   padding: .6rem .8rem;
   font-size: .9rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .msg--bot {
@@ -332,10 +371,32 @@ function onKeydown(e) {
   color: var(--text-primary);
   padding: .6rem .85rem;
   font-size: .9rem;
+  transition: border-color var(--duration-fast), opacity var(--duration-fast);
 }
 
 .chat-window__input input:focus {
   border-color: var(--accent-gold);
+}
+
+.chat-window__input input:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.btn-send {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: all var(--duration-fast);
+}
+
+.btn-send:disabled {
+  opacity: .35;
+  cursor: not-allowed;
 }
 
 /* ═══ Transitions ═══ */
