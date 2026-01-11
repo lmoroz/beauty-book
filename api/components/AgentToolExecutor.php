@@ -274,6 +274,12 @@ class AgentToolExecutor extends Component
             $query->andWhere(['<', 'start_time', $args['time_to'] . ':00']);
         }
 
+        $now = date('Y-m-d');
+        if ($date === $now) {
+            $cutoff = date('H:i:s', strtotime('+30 minutes'));
+            $query->andWhere(['>=', 'start_time', $cutoff]);
+        }
+
         $slots = $query->all();
 
         $result = [];
@@ -288,6 +294,7 @@ class AgentToolExecutor extends Component
         return json_encode([
             'master' => $master->name,
             'date' => $date,
+            'current_time' => date('H:i'),
             'free_slots' => $result,
             'total' => count($result),
         ], JSON_UNESCAPED_UNICODE);

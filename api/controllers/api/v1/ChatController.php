@@ -120,14 +120,14 @@ class ChatController extends Controller
                 $response = $llm->chatCompletion($messages, $toolDefinitions);
             } catch (\RuntimeException $e) {
                 Yii::error('LLM API call failed: ' . $e->getMessage());
-                $assistantReply = Yii::t('app', 'I apologize, but I am temporarily unavailable. Please try again later or contact the salon administrator.');
+                $assistantReply = 'Извините, я временно недоступен. Пожалуйста, попробуйте позже или свяжитесь с администратором салона.';
                 break;
             }
 
             $choice = isset($response['choices'][0]) ? $response['choices'][0] : null;
             if (!$choice) {
                 Yii::error('LLM returned no choices: ' . json_encode($response));
-                $assistantReply = Yii::t('app', 'Something went wrong. Please try again.');
+                $assistantReply = 'Что-то пошло не так. Пожалуйста, попробуйте ещё раз.';
                 break;
             }
 
@@ -168,7 +168,7 @@ class ChatController extends Controller
         }
 
         if (empty($assistantReply) && $iteration >= $this->maxIterations) {
-            $assistantReply = Yii::t('app', 'I was unable to complete your request. Please try rephrasing or contact the salon directly.');
+            $assistantReply = 'Не удалось обработать ваш запрос. Попробуйте переформулировать или свяжитесь с салоном напрямую.';
         }
 
         $updatedHistory = $history;
