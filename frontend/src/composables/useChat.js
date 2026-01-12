@@ -1,14 +1,59 @@
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import api from '../api/client.js'
 
 const CONV_KEY = 'bellezza_conv_id'
+const CONV_ACTIVITY_KEY = 'bellezza_conv_activity'
+const CONV_MESSAGES_KEY = 'bellezza_conv_messages'
 const CLIENT_KEY = 'bellezza_client'
 const DEFAULT_GREETING = 'Здравствуйте! Я помогу подобрать мастера, услугу и удобное время для записи. Расскажите, что вас интересует?'
+const CONVERSATION_TTL_MS = 4 * 60 * 60 * 1000 // 4 hours
 
-const messages = ref([])
+function isConversationExpired() {
+  const lastActivity = localStorage.getItem(CONV_ACTIVITY_KEY)
+  if (!lastActivity) return true
+  return (Date.now() - Number(lastActivity)) > CONVERSATION_TTL_MS
+}
+
+function touchActivity() {
+  localStorage.setItem(CONV_ACTIVITY_KEY, String(Date.now()))
+}
+
+function loadPersistedState() {
+  if (isConversationExpired()) {
+    localStorage.removeItem(CONV_KEY)
+    localStorage.removeItem(CONV_MESSAGES_KEY)
+    localStorage.removeItem(CONV_ACTIVITY_KEY)
+    return { conversationId: '', messages: [] }
+  }
+
+  const convId = localStorage.getItem(CONV_KEY) || ''
+  let messages = []
+  try {
+    const raw = localStorage.getItem(CONV_MESSAGES_KEY)
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed)) messages = parsed
+    }
+  } catch {
+    // corrupted data — start fresh
+  }
+
+  return { conversationId: convId, messages }
+}
+
+const persisted = loadPersistedState()
+const messages = ref(persisted.messages)
 const loading = ref(false)
 const greeting = ref('')
-const conversationId = ref(sessionStorage.getItem(CONV_KEY) || '')
+const conversationId = ref(persisted.conversationId)
+
+watch(messages, (val) => {
+  try {
+    localStorage.setItem(CONV_MESSAGES_KEY, JSON.stringify(val))
+  } catch {
+    // quota exceeded — ignore
+  }
+}, { deep: true })
 
 export function useChat() {
   const client = computed(() => {
@@ -61,8 +106,10 @@ export function useChat() {
 
       if (data.conversation_id) {
         conversationId.value = data.conversation_id
-        sessionStorage.setItem(CONV_KEY, data.conversation_id)
+        localStorage.setItem(CONV_KEY, data.conversation_id)
       }
+
+      touchActivity()
 
       if (data.reply) {
         messages.value.push({ role: 'assistant', content: data.reply })
@@ -86,7 +133,9 @@ export function useChat() {
   function resetConversation() {
     messages.value = []
     conversationId.value = ''
-    sessionStorage.removeItem(CONV_KEY)
+    localStorage.removeItem(CONV_KEY)
+    localStorage.removeItem(CONV_MESSAGES_KEY)
+    localStorage.removeItem(CONV_ACTIVITY_KEY)
   }
 
   return {

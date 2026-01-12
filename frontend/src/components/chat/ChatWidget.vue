@@ -14,13 +14,15 @@ const { messages, loading, getGreeting, fetchGreeting, sendMessage, resetConvers
 async function openChat() {
   expanded.value = true
   if (!initialized.value) {
-    await fetchGreeting()
-    const text = getGreeting()
-    messages.value = text
-      .split('\n')
-      .map(line => line.trim())
-      .filter(Boolean)
-      .map(line => ({ role: 'assistant', content: line }))
+    if (messages.value.length === 0) {
+      await fetchGreeting()
+      const text = getGreeting()
+      messages.value = text
+        .split('\n')
+        .map(line => line.trim())
+        .filter(Boolean)
+        .map(line => ({ role: 'assistant', content: line }))
+    }
     initialized.value = true
   }
   await nextTick()
