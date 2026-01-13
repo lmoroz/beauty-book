@@ -1,12 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace app\models;
 
 use yii\db\ActiveRecord;
 
 /**
- * TimeSlot model — a bookable time slot in a master's schedule.
- *
  * @property int $id
  * @property int $master_id
  * @property string $date
@@ -78,17 +78,11 @@ class TimeSlot extends ActiveRecord
         return $this->hasOne(Booking::class, ['time_slot_id' => 'id']);
     }
 
-    /**
-     * Check if the slot is available for booking.
-     */
     public function isFree(): bool
     {
         return $this->status === self::STATUS_FREE;
     }
 
-    /**
-     * Find free slots for a master on a given date.
-     */
     public static function findFreeSlots(int $masterId, string $date): \yii\db\ActiveQuery
     {
         return static::find()
@@ -132,13 +126,7 @@ class TimeSlot extends ActiveRecord
         return $slots;
     }
 
-    /**
-     * @param int $masterId
-     * @param string $weekStart Y-m-d (Monday)
-     * @param array|null $workingHours Salon working_hours structure
-     * @return int Number of slots created
-     */
-    public static function generateWeekSlots($masterId, $weekStart, $workingHours = null)
+    public static function generateWeekSlots(int $masterId, string $weekStart, ?array $workingHours = null): int
     {
         if ($workingHours === null) {
             $salon = Salon::find()->where(['is_active' => 1])->limit(1)->one();

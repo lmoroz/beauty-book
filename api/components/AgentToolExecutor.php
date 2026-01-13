@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace app\components;
 
 use app\models\Booking;
@@ -11,12 +13,7 @@ use yii\base\Component;
 
 class AgentToolExecutor extends Component
 {
-    /**
-     * Tool definitions in OpenAI function calling format.
-     *
-     * @return array
-     */
-    public function getToolDefinitions()
+    public function getToolDefinitions(): array
     {
         return [
             [
@@ -160,14 +157,7 @@ class AgentToolExecutor extends Component
         ];
     }
 
-    /**
-     * Execute a tool call and return the result as a string.
-     *
-     * @param string $toolName
-     * @param array $arguments
-     * @return string JSON-encoded result
-     */
-    public function execute($toolName, array $arguments)
+    public function execute(string $toolName, array $arguments): string
     {
         switch ($toolName) {
             case 'search_masters':
@@ -187,7 +177,7 @@ class AgentToolExecutor extends Component
         }
     }
 
-    private function searchMasters(array $args)
+    private function searchMasters(array $args): string
     {
         $query = Master::find()->where(['status' => 'active'])->with(['specializations', 'services']);
 
@@ -225,7 +215,7 @@ class AgentToolExecutor extends Component
         return json_encode($result, JSON_UNESCAPED_UNICODE);
     }
 
-    private function getMasterServices(array $args)
+    private function getMasterServices(array $args): string
     {
         $masterId = isset($args['master_id']) ? (int) $args['master_id'] : 0;
         $master = Master::findOne($masterId);
@@ -251,7 +241,7 @@ class AgentToolExecutor extends Component
         return json_encode(['master' => $master->name, 'services' => $result], JSON_UNESCAPED_UNICODE);
     }
 
-    private function checkAvailability(array $args)
+    private function checkAvailability(array $args): string
     {
         $masterId = isset($args['master_id']) ? (int) $args['master_id'] : 0;
         $date = isset($args['date']) ? $args['date'] : '';
@@ -300,7 +290,7 @@ class AgentToolExecutor extends Component
         ], JSON_UNESCAPED_UNICODE);
     }
 
-    private function createBooking(array $args)
+    private function createBooking(array $args): string
     {
         $slotId = isset($args['slot_id']) ? (int) $args['slot_id'] : 0;
         $serviceId = isset($args['service_id']) ? (int) $args['service_id'] : 0;
@@ -380,7 +370,7 @@ class AgentToolExecutor extends Component
         }
     }
 
-    private function cancelBooking(array $args)
+    private function cancelBooking(array $args): string
     {
         $bookingId = isset($args['booking_id']) ? (int) $args['booking_id'] : 0;
         $reason = isset($args['reason']) ? $args['reason'] : null;
@@ -422,7 +412,7 @@ class AgentToolExecutor extends Component
         ]);
     }
 
-    private function getBookingStatus(array $args)
+    private function getBookingStatus(array $args): string
     {
         $bookingId = isset($args['booking_id']) ? (int) $args['booking_id'] : 0;
         $phone = isset($args['phone']) ? $args['phone'] : '';
@@ -458,11 +448,7 @@ class AgentToolExecutor extends Component
         return json_encode(['error' => 'Provide booking_id or phone']);
     }
 
-    /**
-     * @param Booking $booking
-     * @return string
-     */
-    private function formatBookingInfo(Booking $booking)
+    private function formatBookingInfo(Booking $booking): string
     {
         $slot = $booking->timeSlot;
         $service = $booking->service;

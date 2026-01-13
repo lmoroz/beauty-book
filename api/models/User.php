@@ -25,13 +25,13 @@ use yii\web\IdentityInterface;
  */
 class User extends ActiveRecord implements IdentityInterface
 {
-    const STATUS_DELETED = 0;
-    const STATUS_INACTIVE = 9;
-    const STATUS_ACTIVE = 10;
+    public const STATUS_DELETED = 0;
+    public const STATUS_INACTIVE = 9;
+    public const STATUS_ACTIVE = 10;
 
-    const ROLE_CLIENT = 'client';
-    const ROLE_MASTER = 'master';
-    const ROLE_ADMIN = 'admin';
+    public const ROLE_CLIENT = 'client';
+    public const ROLE_MASTER = 'master';
+    public const ROLE_ADMIN = 'admin';
 
     public static function tableName(): string
     {
@@ -60,8 +60,6 @@ class User extends ActiveRecord implements IdentityInterface
         ];
     }
 
-    // --- IdentityInterface ---
-
     public static function findIdentity($id)
     {
         return static::findOne(['id' => $id, 'status' => self::STATUS_ACTIVE]);
@@ -86,8 +84,6 @@ class User extends ActiveRecord implements IdentityInterface
     {
         return $this->auth_key === $authKey;
     }
-
-    // --- Authentication helpers ---
 
     public static function findByUsername(string $username): ?self
     {
@@ -119,14 +115,10 @@ class User extends ActiveRecord implements IdentityInterface
         $this->access_token = Yii::$app->security->generateRandomString(64);
     }
 
-    // --- Relations ---
-
     public function getMaster(): \yii\db\ActiveQuery
     {
         return $this->hasOne(Master::class, ['id' => 'master_id']);
     }
-
-    // --- Helpers ---
 
     public function isAdmin(): bool
     {

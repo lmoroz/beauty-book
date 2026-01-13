@@ -1,12 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace app\models;
 
 use yii\db\ActiveRecord;
 
 /**
- * Booking model — a client's appointment.
- *
  * @property int $id
  * @property int $time_slot_id
  * @property int $service_id
@@ -93,9 +93,6 @@ class Booking extends ActiveRecord
         return $this->hasOne(Service::class, ['id' => 'service_id']);
     }
 
-    /**
-     * Cancel the booking.
-     */
     public function cancel(?string $reason = null): bool
     {
         $this->status = self::STATUS_CANCELLED;

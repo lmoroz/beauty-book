@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace app\controllers\api\v1;
 
 use app\components\AgentToolExecutor;
@@ -11,10 +13,9 @@ use yii\web\BadRequestHttpException;
 
 class ChatController extends Controller
 {
-    /** @var int Maximum tool call iterations to prevent infinite loops */
-    private $maxIterations = 5;
+    private int $maxIterations = 5;
 
-    public function behaviors()
+    public function behaviors(): array
     {
         $behaviors = parent::behaviors();
 
@@ -42,12 +43,7 @@ class ChatController extends Controller
         return $behaviors;
     }
 
-    /**
-     * GET /api/v1/chat/greeting
-     *
-     * Returns the bot greeting message from salon settings.
-     */
-    public function actionGreeting()
+    public function actionGreeting(): array
     {
         $salon = \app\models\Salon::find()->where(['is_active' => 1])->limit(1)->one();
         $greeting = $salon ? $salon->getChatGreeting() : \app\models\Salon::DEFAULT_CHAT_GREETING;
@@ -55,20 +51,7 @@ class ChatController extends Controller
         return ['greeting' => $greeting];
     }
 
-    /**
-     * POST /api/v1/chat
-     *
-     * Request body:
-     *   - message (string, required): User message
-     *   - conversation_id (string, optional): For conversation continuity
-     *   - history (array, optional): Previous messages [['role' => '...', 'content' => '...'], ...]
-     *
-     * Response:
-     *   - reply (string): Agent's text response
-     *   - conversation_id (string): Conversation identifier
-     *   - tool_calls_made (array): List of tools that were called (for transparency)
-     */
-    public function actionSend()
+    public function actionSend(): array
     {
         $request = Yii::$app->request;
         $message = $request->getBodyParam('message');
@@ -101,10 +84,8 @@ class ChatController extends Controller
             [['role' => 'user', 'content' => $message]]
         );
 
-        /** @var LlmClient $llm */
         $llm = Yii::$app->llm;
 
-        /** @var AgentToolExecutor $executor */
         $executor = new AgentToolExecutor();
 
         $toolDefinitions = $executor->getToolDefinitions();
@@ -184,10 +165,7 @@ class ChatController extends Controller
         ];
     }
 
-    /**
-     * @return string
-     */
-    private function getSystemPrompt()
+    private function getSystemPrompt(): string
     {
         $file = Yii::getAlias('@app/config/agent-system-prompt.md');
         $template = file_get_contents($file);
@@ -204,20 +182,12 @@ class ChatController extends Controller
         return strtr($template, $vars);
     }
 
-    /**
-     * @return string
-     */
-    private function generateConversationId()
+    private function generateConversationId(): string
     {
         return bin2hex(random_bytes(16));
     }
 
-    /**
-     * @param string $redisKey
-     * @param array $clientHistory
-     * @return array
-     */
-    private function loadConversation($redisKey, array $clientHistory)
+    private function loadConversation(string $redisKey, array $clientHistory): array
     {
         $redis = Yii::$app->redis;
         $stored = $redis->get($redisKey);
@@ -247,11 +217,7 @@ class ChatController extends Controller
         return [];
     }
 
-    /**
-     * @param string $redisKey
-     * @param array $history
-     */
-    private function saveConversation($redisKey, array $history)
+    private function saveConversation(string $redisKey, array $history): void
     {
         $redis = Yii::$app->redis;
         $trimmed = array_slice($history, -30);

@@ -37,10 +37,7 @@ class MasterDashboardController extends Controller
         return $behaviors;
     }
 
-    /**
-     * @return User
-     */
-    private function authenticateMaster()
+    private function authenticateMaster(): User
     {
         $token = Yii::$app->request->getHeaders()->get('Authorization');
 

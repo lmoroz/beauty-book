@@ -1,13 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace app\models;
 
 use Yii;
 use yii\db\ActiveRecord;
 
 /**
- * Salon model.
- *
  * @property int $id
  * @property string $name
  * @property string $slug
@@ -25,25 +25,17 @@ use yii\db\ActiveRecord;
  */
 class Salon extends ActiveRecord
 {
-    const DEFAULT_CHAT_GREETING = 'Здравствуйте! Я помогу подобрать мастера, услугу и удобное время для записи. Расскажите, что вас интересует?';
+    public const DEFAULT_CHAT_GREETING = 'Здравствуйте! Я помогу подобрать мастера, услугу и удобное время для записи. Расскажите, что вас интересует?';
 
-    /** @var string used by admin form */
     public $chat_greeting;
 
-    /** @var string */
     public $llm_base_url;
-    /** @var string */
     public $llm_api_key;
-    /** @var string */
     public $llm_model;
-    /** @var float|string */
     public $llm_temperature;
-    /** @var int|string */
     public $llm_max_tokens;
-    /** @var int|string */
     public $llm_timeout;
 
-    /** @var string[] Working hours virtual properties */
     public $wh_mon_open, $wh_mon_close, $wh_mon_closed;
     public $wh_tue_open, $wh_tue_close, $wh_tue_closed;
     public $wh_wed_open, $wh_wed_close, $wh_wed_closed;
@@ -174,10 +166,7 @@ class Salon extends ActiveRecord
         $this->working_hours = json_encode($wh, JSON_UNESCAPED_UNICODE);
     }
 
-    /**
-     * @return string
-     */
-    public function getChatGreeting()
+    public function getChatGreeting(): string
     {
         $data = $this->getSettingsArray();
         return isset($data['chat_greeting']) && $data['chat_greeting'] !== ''
@@ -185,10 +174,7 @@ class Salon extends ActiveRecord
             : self::DEFAULT_CHAT_GREETING;
     }
 
-    /**
-     * @return string
-     */
-    public function getMaskedApiKey()
+    public function getMaskedApiKey(): string
     {
         $data = $this->getSettingsArray();
         $key = isset($data['llm_api_key']) ? $data['llm_api_key'] : '';
@@ -202,19 +188,12 @@ class Salon extends ActiveRecord
         return substr($key, 0, 4) . str_repeat('•', $len - 8) . substr($key, -4);
     }
 
-    /**
-     * @param string $value
-     * @return bool
-     */
-    private function isMaskedKey($value)
+    private function isMaskedKey(string $value): bool
     {
         return (bool) preg_match('/•/', $value);
     }
 
-    /**
-     * @return string
-     */
-    public function getEffectiveLlmBaseUrl()
+    public function getEffectiveLlmBaseUrl(): string
     {
         $data = $this->getSettingsArray();
         return isset($data['llm_base_url']) && $data['llm_base_url'] !== ''
@@ -222,10 +201,7 @@ class Salon extends ActiveRecord
             : Yii::$app->llm->baseUrl;
     }
 
-    /**
-     * @return string
-     */
-    public function getEffectiveLlmApiKey()
+    public function getEffectiveLlmApiKey(): string
     {
         $data = $this->getSettingsArray();
         return isset($data['llm_api_key']) && $data['llm_api_key'] !== ''
@@ -233,10 +209,7 @@ class Salon extends ActiveRecord
             : Yii::$app->llm->apiKey;
     }
 
-    /**
-     * @return string
-     */
-    public function getEffectiveLlmModel()
+    public function getEffectiveLlmModel(): string
     {
         $data = $this->getSettingsArray();
         return isset($data['llm_model']) && $data['llm_model'] !== ''
@@ -244,10 +217,7 @@ class Salon extends ActiveRecord
             : Yii::$app->llm->model;
     }
 
-    /**
-     * @return float
-     */
-    public function getEffectiveLlmTemperature()
+    public function getEffectiveLlmTemperature(): float
     {
         $data = $this->getSettingsArray();
         return isset($data['llm_temperature']) && $data['llm_temperature'] !== ''
@@ -255,10 +225,7 @@ class Salon extends ActiveRecord
             : Yii::$app->llm->temperature;
     }
 
-    /**
-     * @return int
-     */
-    public function getEffectiveLlmMaxTokens()
+    public function getEffectiveLlmMaxTokens(): int
     {
         $data = $this->getSettingsArray();
         return isset($data['llm_max_tokens']) && $data['llm_max_tokens'] !== ''
@@ -266,10 +233,7 @@ class Salon extends ActiveRecord
             : Yii::$app->llm->maxTokens;
     }
 
-    /**
-     * @return int
-     */
-    public function getEffectiveLlmTimeout()
+    public function getEffectiveLlmTimeout(): int
     {
         $data = $this->getSettingsArray();
         return isset($data['llm_timeout']) && $data['llm_timeout'] !== ''
@@ -277,10 +241,7 @@ class Salon extends ActiveRecord
             : Yii::$app->llm->timeout;
     }
 
-    /**
-     * @return array
-     */
-    public function getSettingsArray()
+    public function getSettingsArray(): array
     {
         if (empty($this->settings)) {
             return [];

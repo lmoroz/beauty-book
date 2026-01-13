@@ -1,12 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace app\models;
 
 use yii\db\ActiveRecord;
 
 /**
- * Service model — a service offered by a master.
- *
  * @property int $id
  * @property int $master_id
  * @property string $name

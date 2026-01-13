@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace app\components;
 
 use Yii;
@@ -8,32 +10,23 @@ use yii\base\InvalidConfigException;
 
 class LlmClient extends Component
 {
-    /** @var string */
-    public $baseUrl = 'https://routerai.ru/api/v1';
+    public string $baseUrl = 'https://routerai.ru/api/v1';
 
-    /** @var string */
-    public $apiKey = '';
+    public string $apiKey = '';
 
-    /** @var string */
-    public $model = 'z-ai/glm-5';
+    public string $model = 'z-ai/glm-5';
 
-    /** @var float */
-    public $temperature = 0.7;
+    public float $temperature = 0.7;
 
-    /** @var int */
-    public $maxTokens = 1024;
+    public int $maxTokens = 1024;
 
-    /** @var int */
-    public $timeout = 30;
+    public int $timeout = 30;
 
-    /** @var bool */
-    public $enableLogging = true;
+    public bool $enableLogging = true;
 
-    /** @var int */
-    public $logRetentionDays = 7;
+    public int $logRetentionDays = 7;
 
-    /** @var string|null resolved log directory path */
-    private $_logDir;
+    private ?string $_logDir = null;
 
     public function init()
     {
@@ -71,16 +64,7 @@ class LlmClient extends Component
         }
     }
 
-    /**
-     * Send a chat completion request with optional tool definitions.
-     *
-     * @param array $messages     Chat messages [['role' => '...', 'content' => '...'], ...]
-     * @param array $tools        Tool definitions in OpenAI format (optional)
-     * @param string|null $toolChoice  'auto', 'none', or specific tool name
-     * @return array Raw API response decoded from JSON
-     * @throws \RuntimeException on HTTP or cURL error
-     */
-    public function chatCompletion(array $messages, array $tools = [], $toolChoice = null)
+    public function chatCompletion(array $messages, array $tools = [], ?string $toolChoice = null): array
     {
         $payload = [
             'model' => $this->model,
@@ -97,16 +81,7 @@ class LlmClient extends Component
         return $this->request('POST', '/chat/completions', $payload);
     }
 
-    /**
-     * Low-level HTTP request via cURL.
-     *
-     * @param string $method
-     * @param string $path
-     * @param array $body
-     * @return array
-     * @throws \RuntimeException
-     */
-    private function request($method, $path, array $body = [])
+    private function request(string $method, string $path, array $body = []): array
     {
         $url = rtrim($this->baseUrl, '/') . $path;
         $json = json_encode($body, JSON_UNESCAPED_UNICODE);
@@ -159,32 +134,18 @@ class LlmClient extends Component
         return $data;
     }
 
-    // ─── Logging ────────────────────────────────────────────────
-
-    /**
-     * @param string $method
-     * @param string $url
-     * @param array $requestPayload
-     * @param int $httpCode
-     * @param float $elapsed
-     * @param float $curlTime
-     * @param array|null $responseData
-     * @param string $rawResponse
-     * @param int $errno
-     * @param string $error
-     */
     private function writeLog(
-        $method,
-        $url,
+        string $method,
+        string $url,
         array $requestPayload,
-        $httpCode,
-        $elapsed,
-        $curlTime,
-        $responseData,
-        $rawResponse,
-        $errno,
-        $error
-    ) {
+        int $httpCode,
+        float $elapsed,
+        float $curlTime,
+        ?array $responseData,
+        string $rawResponse,
+        int $errno,
+        string $error
+    ): void {
         if (!$this->enableLogging) {
             return;
         }
@@ -231,10 +192,7 @@ class LlmClient extends Component
         }
     }
 
-    /**
-     * @return string
-     */
-    private function getLogDir()
+    private function getLogDir(): string
     {
         if ($this->_logDir === null) {
             $this->_logDir = Yii::getAlias('@app/logs/llm');
@@ -245,10 +203,7 @@ class LlmClient extends Component
         return $this->_logDir;
     }
 
-    /**
-     * @param string $dir
-     */
-    private function rotateOldLogs($dir)
+    private function rotateOldLogs(string $dir): void
     {
         static $lastCheck = 0;
         $now = time();
