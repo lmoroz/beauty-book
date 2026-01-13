@@ -135,7 +135,8 @@ class MasterController extends ActiveController
             'total' => count($slotsArray),
         ];
 
-        Yii::$app->redis->set($cacheKey, json_encode($result), 'EX', 300);
+        $cacheTtl = ($date === date('Y-m-d')) ? 30 : 300;
+        Yii::$app->redis->set($cacheKey, json_encode($result), 'EX', $cacheTtl);
 
         return $result;
     }

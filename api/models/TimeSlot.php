@@ -85,13 +85,19 @@ class TimeSlot extends ActiveRecord
 
     public static function findFreeSlots(int $masterId, string $date): \yii\db\ActiveQuery
     {
-        return static::find()
+        $query = static::find()
             ->where([
                 'master_id' => $masterId,
                 'date' => $date,
                 'status' => self::STATUS_FREE,
             ])
             ->orderBy(['start_time' => SORT_ASC]);
+
+        if ($date === date('Y-m-d')) {
+            $query->andWhere(['>', 'start_time', date('H:i:s')]);
+        }
+
+        return $query;
     }
 
     public static function findConsecutiveFreeSlots(int $masterId, string $date, string $startTime, int $count): array
