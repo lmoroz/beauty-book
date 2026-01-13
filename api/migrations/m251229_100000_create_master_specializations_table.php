@@ -40,12 +40,12 @@ class m251229_100000_create_master_specializations_table extends Migration
         );
 
         // Migrate existing data from specialization_id column
-        $this->execute("
+        $this->execute('
             INSERT INTO {{%master_specializations}} (master_id, specialization_id)
             SELECT id, specialization_id
             FROM {{%masters}}
             WHERE specialization_id IS NOT NULL
-        ");
+        ');
 
         // Drop old FK and column
         $this->dropForeignKey('fk_masters_specialization_id', '{{%masters}}');
@@ -57,7 +57,7 @@ class m251229_100000_create_master_specializations_table extends Migration
         $this->addColumn('{{%masters}}', 'specialization_id', $this->integer()->null()->after('slug'));
 
         // Restore first specialization per master
-        $this->execute("
+        $this->execute('
             UPDATE {{%masters}} m
             JOIN (
                 SELECT master_id, MIN(specialization_id) AS spec_id
@@ -65,7 +65,7 @@ class m251229_100000_create_master_specializations_table extends Migration
                 GROUP BY master_id
             ) ms ON ms.master_id = m.id
             SET m.specialization_id = ms.spec_id
-        ");
+        ');
 
         $this->addForeignKey(
             'fk_masters_specialization_id',

@@ -1,7 +1,6 @@
 <?php
 /** @var app\models\Salon $model */
 use yii\helpers\Html;
-use yii\helpers\Url;
 
 $this->title = 'Настройки салона';
 ?>
@@ -61,12 +60,12 @@ $this->title = 'Настройки салона';
                     'mon' => 'Пн', 'tue' => 'Вт', 'wed' => 'Ср',
                     'thu' => 'Чт', 'fri' => 'Пт', 'sat' => 'Сб', 'sun' => 'Вс',
                 ];
-                foreach ($dayLabels as $key => $label):
-                    $openProp = "wh_{$key}_open";
-                    $closeProp = "wh_{$key}_close";
-                    $closedProp = "wh_{$key}_closed";
-                    $isClosed = (bool) $model->$closedProp;
-                ?>
+foreach ($dayLabels as $key => $label):
+    $openProp = "wh_{$key}_open";
+    $closeProp = "wh_{$key}_close";
+    $closedProp = "wh_{$key}_closed";
+    $isClosed = (bool) $model->$closedProp;
+    ?>
                 <tr style="border-bottom: 1px solid #eee;">
                     <td style="padding: 6px 8px; font-weight: 600;"><?= $label ?></td>
                     <td style="padding: 6px 8px;">

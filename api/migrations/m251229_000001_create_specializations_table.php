@@ -32,11 +32,11 @@ class m251229_000001_create_specializations_table extends Migration
 
         $this->addColumn('{{%masters}}', 'specialization_id', $this->integer()->null()->after('slug'));
 
-        $this->execute("
+        $this->execute('
             UPDATE {{%masters}} m
             JOIN {{%specializations}} s ON s.slug = m.specialization
             SET m.specialization_id = s.id
-        ");
+        ');
 
         $this->addForeignKey(
             'fk_masters_specialization_id',
@@ -55,11 +55,11 @@ class m251229_000001_create_specializations_table extends Migration
     {
         $this->addColumn('{{%masters}}', 'specialization', $this->string(255)->null()->after('slug'));
 
-        $this->execute("
+        $this->execute('
             UPDATE {{%masters}} m
             JOIN {{%specializations}} s ON s.id = m.specialization_id
             SET m.specialization = s.slug
-        ");
+        ');
 
         $this->dropForeignKey('fk_masters_specialization_id', '{{%masters}}');
         $this->dropColumn('{{%masters}}', 'specialization_id');

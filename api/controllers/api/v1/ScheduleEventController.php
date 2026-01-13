@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace app\controllers\api\v1;
 
+use app\models\Master;
 use Yii;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
-use app\models\Master;
 
 class ScheduleEventController extends Controller
 {
@@ -46,7 +46,7 @@ class ScheduleEventController extends Controller
                         $lastEventId = $eventId;
                         echo "id: {$eventId}\n";
                         echo "event: schedule_update\n";
-                        echo "data: " . json_encode($data, JSON_UNESCAPED_UNICODE) . "\n\n";
+                        echo 'data: ' . json_encode($data, JSON_UNESCAPED_UNICODE) . "\n\n";
                         ob_flush();
                         flush();
                     }

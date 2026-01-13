@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace app\components;
 
 use yii\base\Component;
-use yii\base\InvalidConfigException;
 
 class RedisQueue extends Component
 {

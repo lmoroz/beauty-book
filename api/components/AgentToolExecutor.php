@@ -442,7 +442,9 @@ class AgentToolExecutor extends Component
             ]);
 
             Yii::$app->schedulePublisher->publishSlotBooked(
-                $fresh->master_id, $fresh->id, $fresh->date
+                $fresh->master_id,
+                $fresh->id,
+                $fresh->date
             );
 
             return json_encode([
@@ -493,7 +495,9 @@ class AgentToolExecutor extends Component
         $slot = $booking->timeSlot;
         if ($slot) {
             Yii::$app->schedulePublisher->publishSlotFreed(
-                $slot->master_id, $slot->id, $slot->date
+                $slot->master_id,
+                $slot->id,
+                $slot->date
             );
         }
 

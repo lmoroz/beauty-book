@@ -36,13 +36,27 @@ class Salon extends ActiveRecord
     public $llm_max_tokens;
     public $llm_timeout;
 
-    public $wh_mon_open, $wh_mon_close, $wh_mon_closed;
-    public $wh_tue_open, $wh_tue_close, $wh_tue_closed;
-    public $wh_wed_open, $wh_wed_close, $wh_wed_closed;
-    public $wh_thu_open, $wh_thu_close, $wh_thu_closed;
-    public $wh_fri_open, $wh_fri_close, $wh_fri_closed;
-    public $wh_sat_open, $wh_sat_close, $wh_sat_closed;
-    public $wh_sun_open, $wh_sun_close, $wh_sun_closed;
+    public $wh_mon_open;
+    public $wh_mon_close;
+    public $wh_mon_closed;
+    public $wh_tue_open;
+    public $wh_tue_close;
+    public $wh_tue_closed;
+    public $wh_wed_open;
+    public $wh_wed_close;
+    public $wh_wed_closed;
+    public $wh_thu_open;
+    public $wh_thu_close;
+    public $wh_thu_closed;
+    public $wh_fri_open;
+    public $wh_fri_close;
+    public $wh_fri_closed;
+    public $wh_sat_open;
+    public $wh_sat_close;
+    public $wh_sat_closed;
+    public $wh_sun_open;
+    public $wh_sun_close;
+    public $wh_sun_closed;
 
     public static function tableName(): string
     {
@@ -86,7 +100,8 @@ class Salon extends ActiveRecord
         $this->llm_max_tokens = isset($data['llm_max_tokens']) ? $data['llm_max_tokens'] : '';
         $this->llm_timeout = isset($data['llm_timeout']) ? $data['llm_timeout'] : '';
 
-        $this->loadWorkingHours();    }
+        $this->loadWorkingHours();
+    }
 
     public function beforeSave($insert)
     {

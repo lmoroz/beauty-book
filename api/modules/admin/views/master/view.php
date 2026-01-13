@@ -27,14 +27,14 @@ $this->title = $model->name;
         <tr><th>Slug</th><td><?= Html::encode($model->slug) ?></td></tr>
         <tr><th>Специализации</th><td><?php
             $specs = $model->specializations;
-            if ($specs) {
-                foreach ($specs as $spec) {
-                    echo '<span class="badge badge-info" style="margin-right:4px;">' . Html::encode($spec->name) . '</span>';
-                }
-            } else {
-                echo '—';
-            }
-        ?></td></tr>
+if ($specs) {
+    foreach ($specs as $spec) {
+        echo '<span class="badge badge-info" style="margin-right:4px;">' . Html::encode($spec->name) . '</span>';
+    }
+} else {
+    echo '—';
+}
+?></td></tr>
         <tr><th>Био</th><td><?= Html::encode($model->bio) ?></td></tr>
         <tr><th>Телефон</th><td><?= Html::encode($model->phone) ?></td></tr>
         <tr><th>Фото</th><td><?= $model->photo ? Html::img($model->photo, ['style' => 'max-width:200px']) : '—' ?></td></tr>

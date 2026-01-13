@@ -3,6 +3,7 @@
 /** @var app\models\LoginForm $model */
 
 use yii\helpers\Html;
+
 ?>
 <!DOCTYPE html>
 <html lang="ru">

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace app\controllers\api\v1;
 
-use yii\rest\ActiveController;
 use yii\filters\Cors;
+use yii\rest\ActiveController;
 
 class ServiceController extends ActiveController
 {

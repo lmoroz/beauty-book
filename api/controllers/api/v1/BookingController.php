@@ -7,8 +7,8 @@ namespace app\controllers\api\v1;
 use app\models\Booking;
 use app\models\TimeSlot;
 use Yii;
-use yii\rest\ActiveController;
 use yii\filters\Cors;
+use yii\rest\ActiveController;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\ServerErrorHttpException;
@@ -188,13 +188,14 @@ class BookingController extends ActiveController
 
             foreach ($allSlots as $s) {
                 Yii::$app->schedulePublisher->publishSlotBooked(
-                    $s->master_id, $s->id, $s->date
+                    $s->master_id,
+                    $s->id,
+                    $s->date
                 );
             }
 
             Yii::$app->response->statusCode = 201;
             return $booking;
-
         } finally {
             foreach ($lockKeys as $lk) {
                 $currentValue = $redis->get($lk);
@@ -237,7 +238,9 @@ class BookingController extends ActiveController
         $slot = $booking->timeSlot;
         if ($slot) {
             Yii::$app->schedulePublisher->publishSlotFreed(
-                $slot->master_id, $slot->id, $slot->date
+                $slot->master_id,
+                $slot->id,
+                $slot->date
             );
         }
 

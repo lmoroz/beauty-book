@@ -226,8 +226,12 @@ class MasterDashboardController extends Controller
         }
 
         $bookingsBySlot = [];
-        $slotIds = array_map(function ($s) { return $s->id; }, $slots);
-        $bookingIds = array_filter(array_map(function ($s) { return $s->booking_id; }, $slots));
+        $slotIds = array_map(function ($s) {
+            return $s->id;
+        }, $slots);
+        $bookingIds = array_filter(array_map(function ($s) {
+            return $s->booking_id;
+        }, $slots));
 
         if ($slotIds) {
             $bookings = Booking::find()
@@ -529,7 +533,9 @@ class MasterDashboardController extends Controller
 
         foreach ($slotsToFree as $slot) {
             Yii::$app->schedulePublisher->publishSlotFreed(
-                $slot->master_id, $slot->id, $slot->date
+                $slot->master_id,
+                $slot->id,
+                $slot->date
             );
         }
 

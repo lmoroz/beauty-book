@@ -67,7 +67,9 @@ class BookingController extends Controller
 
         foreach ($slotsToFree as $slot) {
             Yii::$app->schedulePublisher->publishSlotFreed(
-                $slot->master_id, $slot->id, $slot->date
+                $slot->master_id,
+                $slot->id,
+                $slot->date
             );
         }
 

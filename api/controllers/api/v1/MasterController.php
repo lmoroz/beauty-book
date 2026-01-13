@@ -7,10 +7,11 @@ namespace app\controllers\api\v1;
 use app\models\Master;
 use app\models\TimeSlot;
 use Yii;
-use yii\rest\ActiveController;
 use yii\filters\Cors;
+use yii\rest\ActiveController;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
+
 class MasterController extends ActiveController
 {
     public $modelClass = 'app\models\Master';
@@ -139,4 +140,3 @@ class MasterController extends ActiveController
         return $result;
     }
 }
-

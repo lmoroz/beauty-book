@@ -1,6 +1,7 @@
 <?php
 /** @var app\models\ServiceCategory $model */
 use yii\helpers\Html;
+
 $this->title = 'Редактировать: ' . Html::encode($model->name);
 ?>
 <div class="breadcrumb">

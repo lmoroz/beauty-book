@@ -119,8 +119,8 @@ $this->title = 'Дашборд';
                             'cancelled' => ['Отменена', 'badge-danger'],
                             'completed' => ['Выполнена', 'badge-info'],
                         ];
-                        $s = $statusMap[$booking->status] ?? [$booking->status, 'badge-info'];
-                        ?>
+                $s = $statusMap[$booking->status] ?? [$booking->status, 'badge-info'];
+                ?>
                         <span class="badge <?= $s[1] ?>"><?= $s[0] ?></span>
                     </td>
                 </tr>

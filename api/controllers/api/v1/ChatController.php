@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace app\controllers\api\v1;
 
 use app\components\AgentToolExecutor;
-use app\components\LlmClient;
 use Yii;
 use yii\filters\Cors;
 use yii\rest\Controller;

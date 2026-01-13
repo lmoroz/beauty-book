@@ -123,7 +123,7 @@ class SnapshotController extends Controller
             $this->stdout("No uploads directory found, skipping uploads backup\n");
         }
 
-        $this->stdout("Snapshot completed at " . date('Y-m-d H:i:s') . "\n");
+        $this->stdout('Snapshot completed at ' . date('Y-m-d H:i:s') . "\n");
         return ExitCode::OK;
     }
 
@@ -195,7 +195,7 @@ class SnapshotController extends Controller
         Yii::$app->cache->flush();
         $this->stdout("Cache flushed\n");
 
-        $this->stdout("Restore completed at " . date('Y-m-d H:i:s') . "\n");
+        $this->stdout('Restore completed at ' . date('Y-m-d H:i:s') . "\n");
         return ExitCode::OK;
     }
 

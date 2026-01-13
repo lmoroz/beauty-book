@@ -39,8 +39,8 @@ $this->title = 'Бронирование #' . $model->id;
                 'cancelled' => ['Отменена', 'badge-danger'],
                 'completed' => ['Выполнена', 'badge-info'],
             ];
-            $s = $statusMap[$model->status] ?? [$model->status, 'badge-info'];
-            ?>
+$s = $statusMap[$model->status] ?? [$model->status, 'badge-info'];
+?>
             <span class="badge <?= $s[1] ?>"><?= $s[0] ?></span>
         </td></tr>
         <tr><th>Примечания</th><td><?= Html::encode($model->notes ?? '—') ?></td></tr>

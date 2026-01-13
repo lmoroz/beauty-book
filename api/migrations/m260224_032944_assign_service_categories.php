@@ -20,17 +20,17 @@ class m260224_032944_assign_service_categories extends Migration
         $this->execute("UPDATE {{%services}} SET category_id = 3 WHERE master_id = 1 AND (name LIKE '%уклад%' OR name LIKE '%Blowout%' OR name LIKE '%уход%' OR name LIKE '%счастье%')");
 
         // All of Maria's services → nails
-        $this->execute("UPDATE {{%services}} SET category_id = 4 WHERE master_id = 2 AND category_id IS NULL");
+        $this->execute('UPDATE {{%services}} SET category_id = 4 WHERE master_id = 2 AND category_id IS NULL');
 
         // All of Elena's services → skincare
-        $this->execute("UPDATE {{%services}} SET category_id = 5 WHERE master_id = 3 AND category_id IS NULL");
+        $this->execute('UPDATE {{%services}} SET category_id = 5 WHERE master_id = 3 AND category_id IS NULL');
 
         // Catch any remaining unassigned for master 1
-        $this->execute("UPDATE {{%services}} SET category_id = 1 WHERE master_id = 1 AND category_id IS NULL");
+        $this->execute('UPDATE {{%services}} SET category_id = 1 WHERE master_id = 1 AND category_id IS NULL');
     }
 
     public function safeDown()
     {
-        $this->execute("UPDATE {{%services}} SET category_id = NULL");
+        $this->execute('UPDATE {{%services}} SET category_id = NULL');
     }
 }
