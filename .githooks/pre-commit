@@ -1,0 +1,25 @@
+#!/bin/sh
+
+# Run php-cs-fixer dry-run on staged PHP files inside Docker container
+STAGED_PHP=$(git diff --cached --name-only --diff-filter=ACM -- 'api/*.php' | grep -v vendor)
+
+if [ -z "$STAGED_PHP" ]; then
+    exit 0
+fi
+
+echo "Running php-cs-fixer check..."
+
+docker exec beautybook_php composer cs-check --quiet 2>&1
+STATUS=$?
+
+if [ $STATUS -ne 0 ]; then
+    echo ""
+    echo "❌ php-cs-fixer found style violations."
+    echo "   Run: docker exec beautybook_php composer cs-fix"
+    echo ""
+    exit 1
+fi
+
+echo "✅ Code style OK"
+exit 0
+

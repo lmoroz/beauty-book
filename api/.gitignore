@@ -49,3 +49,6 @@ tests/_support/_generated
 
 # uploads (user-generated)
 /web/uploads/masters/
+
+# php-cs-fixer cache
+.php-cs-fixer.cache
