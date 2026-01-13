@@ -95,7 +95,7 @@ beautybook/
 - **Дашборд мастера** — новые бронирования и отмены отображаются в расписании без перезагрузки страницы
 - **Виджет бронирования клиента** — если другой клиент забронировал слот, пока первый выбирает время, занятый слот плавно исчезает из списка доступных, а если он был уже выбран — сбрасывается с предупреждением
 
-<video src="https://github.com/lmoroz/beauty-book/blob/master/assets/realtime-booking-update.mp4" controls width="100%"></video>
+<video src="https://github.com/user-attachments/assets/d3ce7f9e-0387-48f8-aa81-8cdbba3b2df6" controls width="100%"></video>
 
 ### Ролевой доступ
 
