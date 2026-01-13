@@ -206,6 +206,8 @@ class MasterDashboardController extends Controller
         }
 
         $weekEnd = date('Y-m-d', strtotime($weekStart . ' +6 days'));
+        $today = date('Y-m-d');
+        $now = date('H:i:s');
 
         $slots = TimeSlot::find()
             ->where(['master_id' => $masterId])
@@ -214,7 +216,7 @@ class MasterDashboardController extends Controller
             ->orderBy(['date' => SORT_ASC, 'start_time' => SORT_ASC])
             ->all();
 
-        if (empty($slots)) {
+        if (empty($slots) && $weekEnd >= $today) {
             TimeSlot::generateWeekSlots($masterId, $weekStart);
 
             $slots = TimeSlot::find()
@@ -224,6 +226,11 @@ class MasterDashboardController extends Controller
                 ->orderBy(['date' => SORT_ASC, 'start_time' => SORT_ASC])
                 ->all();
         }
+
+        $hasEarlierSlots = TimeSlot::find()
+            ->where(['master_id' => $masterId])
+            ->andWhere(['<', 'date', $weekStart])
+            ->exists();
 
         $bookingsBySlot = [];
         $slotIds = array_map(function ($s) {
@@ -256,6 +263,9 @@ class MasterDashboardController extends Controller
 
         $result = [];
         foreach ($slots as $slot) {
+            $isPast = $slot->date < $today
+                || ($slot->date === $today && $slot->end_time <= $now);
+
             $entry = [
                 'id' => $slot->id,
                 'date' => $slot->date,
@@ -263,6 +273,7 @@ class MasterDashboardController extends Controller
                 'end_time' => $slot->end_time,
                 'status' => $slot->status,
                 'block_reason' => $slot->block_reason,
+                'is_past' => $isPast,
             ];
 
             $b = null;
@@ -286,6 +297,7 @@ class MasterDashboardController extends Controller
         return [
             'week_start' => $weekStart,
             'week_end' => $weekEnd,
+            'has_earlier_slots' => $hasEarlierSlots,
             'slots' => $result,
         ];
     }
@@ -374,6 +386,14 @@ class MasterDashboardController extends Controller
         if (!$slot) {
             throw new NotFoundHttpException(
                 Yii::t('master', 'Time slot not found.')
+            );
+        }
+
+        $today = date('Y-m-d');
+        $now = date('H:i:s');
+        if ($slot->date < $today || ($slot->date === $today && $slot->end_time <= $now)) {
+            throw new BadRequestHttpException(
+                Yii::t('master', 'Cannot modify a past slot.')
             );
         }
 

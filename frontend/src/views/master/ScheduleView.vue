@@ -11,6 +11,7 @@ const loading = ref(false)
 const bookingDetail = ref(null)
 const showDetail = ref(false)
 const detailLoading = ref(false)
+const detailIsPast = ref(false)
 
 const contextMenu = ref(null)
 const contextSlot = ref(null)
@@ -32,6 +33,14 @@ function formatDate(d) {
 
 const dayNames = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
 const today = formatDate(new Date())
+const nowTime = () => {
+  const n = new Date()
+  return String(n.getHours()).padStart(2, '0') + ':' + String(n.getMinutes()).padStart(2, '0')
+}
+
+const canGoPrev = computed(() => {
+  return dashboard.schedule?.has_earlier_slots === true
+})
 
 const weekDays = computed(() => {
   const start = new Date(weekStart.value + 'T00:00:00')
@@ -82,13 +91,19 @@ function getSlot(date, time) {
   return slotMap.value[`${date}_${time}`] || null
 }
 
+function isSlotPast(slot) {
+  if (!slot) return false
+  return !!slot.is_past
+}
+
 function getSlotClass(slot) {
   if (!slot) return ''
-  if (slot.status === 'booked') return 'slot slot--booked'
-  if (slot.status === 'blocked' && slot.block_reason === 'lunch') return 'slot slot--lunch'
-  if (slot.status === 'blocked') return 'slot slot--blocked'
-  if (slot.status === 'free') return 'slot slot--free'
-  return 'slot'
+  const past = isSlotPast(slot) ? ' slot--past' : ''
+  if (slot.status === 'booked') return 'slot slot--booked' + past
+  if (slot.status === 'blocked' && slot.block_reason === 'lunch') return 'slot slot--lunch' + past
+  if (slot.status === 'blocked') return 'slot slot--blocked' + past
+  if (slot.status === 'free') return 'slot slot--free' + past
+  return 'slot' + past
 }
 
 function getSlotLabel(slot) {
@@ -108,12 +123,15 @@ function handleSlotClick(slot, event) {
   if (slot.status === 'booked') {
     detailLoading.value = true
     showDetail.value = true
+    detailIsPast.value = isSlotPast(slot)
     dashboard.fetchBookingDetail(slot.id)
       .then(data => { bookingDetail.value = data })
       .catch(() => { bookingDetail.value = null })
       .finally(() => { detailLoading.value = false })
     return
   }
+
+  if (isSlotPast(slot)) return
 
   if (slot.status === 'blocked') {
     dashboard.toggleSlot(slot.id)
@@ -156,6 +174,7 @@ function closeContextMenu() {
 function closeDetail() {
   showDetail.value = false
   bookingDetail.value = null
+  detailIsPast.value = false
 }
 
 const actionLoading = ref(false)
@@ -232,7 +251,7 @@ onMounted(loadSchedule)
     <div class="schedule-view__header">
       <h1>Расписание</h1>
       <div class="schedule-view__nav">
-        <button class="btn btn-outline btn-sm" @click="prevWeek">
+        <button class="btn btn-outline btn-sm" :disabled="!canGoPrev" @click="prevWeek">
           <ChevronLeft :size="18" :stroke-width="1.5" />
           <span>Назад</span>
         </button>
@@ -412,7 +431,7 @@ onMounted(loadSchedule)
                 </span>
               </div>
 
-              <div v-if="bookingDetail.status !== 'cancelled' && bookingDetail.status !== 'completed'" class="detail-actions">
+              <div v-if="!detailIsPast && bookingDetail.status !== 'cancelled' && bookingDetail.status !== 'completed'" class="detail-actions">
                 <button
                   v-if="bookingDetail.status === 'pending'"
                   class="btn-action btn-action--confirm"
@@ -577,6 +596,16 @@ onMounted(loadSchedule)
 
 .slot:active {
   transform: scale(0.98);
+}
+
+.slot--past {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.slot--past:hover {
+  opacity: 0.35;
+  transform: none;
 }
 
 .slot--free {
