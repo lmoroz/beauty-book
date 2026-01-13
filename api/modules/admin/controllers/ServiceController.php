@@ -23,7 +23,7 @@ class ServiceController extends Controller
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
-            'pagination' => ['pageSize' => 50],
+            'pagination' => false,
         ]);
 
         return $this->render('index', [
