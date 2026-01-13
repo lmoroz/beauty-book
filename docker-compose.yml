@@ -29,6 +29,7 @@ services:
       DB_PASSWORD: secret
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      SUPERADMIN_PASSWORD: ${SUPERADMIN_PASSWORD:-changeme}
     depends_on:
       db:
         condition: service_healthy

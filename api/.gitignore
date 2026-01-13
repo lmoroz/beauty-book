@@ -43,3 +43,9 @@ tests/_support/_generated
 # log files (keep .htaccess and .gitkeep)
 /logs/**/*.json
 /logs/**/*.log
+
+# Yii2 runtime (logs, cache, snapshots)
+/runtime/
+
+# uploads (user-generated)
+/web/uploads/masters/

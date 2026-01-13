@@ -32,6 +32,7 @@ class User extends ActiveRecord implements IdentityInterface
     public const ROLE_CLIENT = 'client';
     public const ROLE_MASTER = 'master';
     public const ROLE_ADMIN = 'admin';
+    public const ROLE_SUPERADMIN = 'superadmin';
 
     public static function tableName(): string
     {
@@ -50,7 +51,7 @@ class User extends ActiveRecord implements IdentityInterface
             ['password_hash', 'string', 'max' => 255],
             ['auth_key', 'string', 'max' => 32],
             ['access_token', 'string', 'max' => 64],
-            ['role', 'in', 'range' => [self::ROLE_CLIENT, self::ROLE_MASTER, self::ROLE_ADMIN]],
+            ['role', 'in', 'range' => [self::ROLE_CLIENT, self::ROLE_MASTER, self::ROLE_ADMIN, self::ROLE_SUPERADMIN]],
             ['role', 'default', 'value' => self::ROLE_CLIENT],
             ['status', 'integer'],
             ['status', 'default', 'value' => self::STATUS_ACTIVE],
@@ -122,7 +123,12 @@ class User extends ActiveRecord implements IdentityInterface
 
     public function isAdmin(): bool
     {
-        return $this->role === self::ROLE_ADMIN;
+        return $this->role === self::ROLE_ADMIN || $this->role === self::ROLE_SUPERADMIN;
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === self::ROLE_SUPERADMIN;
     }
 
     public function isMaster(): bool
