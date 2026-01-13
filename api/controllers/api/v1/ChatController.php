@@ -176,7 +176,7 @@ class ChatController extends Controller
             '{{salonName}}' => $salon ? $salon->name : Yii::$app->params['salonName'],
             '{{salonPhone}}' => $salon && $salon->phone ? $salon->phone : Yii::$app->params['salonPhone'],
             '{{salonAddress}}' => $salon && $salon->address ? $salon->address : '',
-            '{{today}}' => date('Y-m-d'),
+            '{{today}}' => (new \DateTimeImmutable('now', new \DateTimeZone('Europe/Moscow')))->format('Y-m-d, H:i (l)'),
         ];
 
         return strtr($template, $vars);

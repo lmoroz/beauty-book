@@ -154,6 +154,31 @@ class AgentToolExecutor extends Component
                     ],
                 ],
             ],
+            [
+                'type' => 'function',
+                'function' => [
+                    'name' => 'find_nearest_availability',
+                    'description' => 'Find the nearest dates with free time slots for a master. Searches up to 14 days ahead from the given start date. Use this when a specific date has no availability or when the client asks for the nearest free slot.',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'master_id' => [
+                                'type' => 'integer',
+                                'description' => 'The ID of the master.',
+                            ],
+                            'from_date' => [
+                                'type' => 'string',
+                                'description' => 'Start searching from this date (YYYY-MM-DD). Defaults to today if not specified.',
+                            ],
+                            'days_ahead' => [
+                                'type' => 'integer',
+                                'description' => 'How many days ahead to search (1-14). Defaults to 7.',
+                            ],
+                        ],
+                        'required' => ['master_id'],
+                    ],
+                ],
+            ],
         ];
     }
 
@@ -172,6 +197,8 @@ class AgentToolExecutor extends Component
                 return $this->cancelBooking($arguments);
             case 'get_booking_status':
                 return $this->getBookingStatus($arguments);
+            case 'find_nearest_availability':
+                return $this->findNearestAvailability($arguments);
             default:
                 return json_encode(['error' => "Unknown tool: {$toolName}"]);
         }
@@ -264,9 +291,9 @@ class AgentToolExecutor extends Component
             $query->andWhere(['<', 'start_time', $args['time_to'] . ':00']);
         }
 
-        $now = date('Y-m-d');
-        if ($date === $now) {
-            $cutoff = date('H:i:s', strtotime('+30 minutes'));
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Moscow'));
+        if ($date === $now->format('Y-m-d')) {
+            $cutoff = $now->modify('+30 minutes')->format('H:i:s');
             $query->andWhere(['>=', 'start_time', $cutoff]);
         }
 
@@ -284,9 +311,74 @@ class AgentToolExecutor extends Component
         return json_encode([
             'master' => $master->name,
             'date' => $date,
-            'current_time' => date('H:i'),
+            'current_time' => $now->format('H:i'),
             'free_slots' => $result,
             'total' => count($result),
+        ], JSON_UNESCAPED_UNICODE);
+    }
+
+    private function findNearestAvailability(array $args): string
+    {
+        $masterId = isset($args['master_id']) ? (int) $args['master_id'] : 0;
+
+        if (!$masterId) {
+            return json_encode(['error' => 'master_id is required']);
+        }
+
+        $master = Master::findOne($masterId);
+        if (!$master) {
+            return json_encode(['error' => 'Master not found']);
+        }
+
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Moscow'));
+        $fromDate = !empty($args['from_date'])
+            ? new \DateTimeImmutable($args['from_date'], new \DateTimeZone('Europe/Moscow'))
+            : $now;
+
+        if ($fromDate < $now->setTime(0, 0)) {
+            $fromDate = $now;
+        }
+
+        $daysAhead = isset($args['days_ahead']) ? min(max((int) $args['days_ahead'], 1), 14) : 7;
+
+        $available = [];
+        $currentTime = $now->format('H:i:s');
+
+        for ($i = 0; $i < $daysAhead; $i++) {
+            $checkDate = $fromDate->modify("+{$i} days")->format('Y-m-d');
+
+            $query = TimeSlot::findFreeSlots($masterId, $checkDate);
+
+            if ($checkDate === $now->format('Y-m-d')) {
+                $cutoff = $now->modify('+30 minutes')->format('H:i:s');
+                $query->andWhere(['>=', 'start_time', $cutoff]);
+            }
+
+            $slots = $query->all();
+
+            if (!empty($slots)) {
+                $slotData = [];
+                foreach ($slots as $slot) {
+                    $slotData[] = [
+                        'id' => $slot->id,
+                        'start_time' => substr($slot->start_time, 0, 5),
+                        'end_time' => substr($slot->end_time, 0, 5),
+                    ];
+                }
+                $available[] = [
+                    'date' => $checkDate,
+                    'slots_count' => count($slotData),
+                    'slots' => $slotData,
+                ];
+            }
+        }
+
+        return json_encode([
+            'master' => $master->name,
+            'search_from' => $fromDate->format('Y-m-d'),
+            'days_searched' => $daysAhead,
+            'dates_with_availability' => $available,
+            'total_dates' => count($available),
         ], JSON_UNESCAPED_UNICODE);
     }
 

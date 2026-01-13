@@ -1,8 +1,20 @@
 <script setup>
 import { ref, watch, nextTick } from 'vue'
 import { X, ChevronDown, RotateCcw, Send } from 'lucide-vue-next'
+import { marked } from 'marked'
+import DOMPurify from 'dompurify'
 import chatAvatarUrl from '../../assets/images/chat_avatar.png'
 import { useChat } from '../../composables/useChat.js'
+
+marked.setOptions({
+  breaks: true,
+  gfm: true,
+})
+
+function renderMarkdown(text) {
+  const raw = marked.parse(text)
+  return DOMPurify.sanitize(raw)
+}
 
 const expanded = ref(false)
 const userInput = ref('')
@@ -122,7 +134,12 @@ function onKeydown(e) {
             class="msg"
             :class="msg.role === 'assistant' ? 'msg--bot' : 'msg--client'"
           >
-            {{ msg.content }}
+            <div
+              v-if="msg.role === 'assistant'"
+              class="msg__markdown"
+              v-html="renderMarkdown(msg.content)"
+            />
+            <template v-else>{{ msg.content }}</template>
           </article>
           <article v-if="loading" class="msg msg--typing">
             <span /><span /><span />
@@ -322,8 +339,85 @@ function onKeydown(e) {
   padding: .6rem .8rem;
   font-size: .9rem;
   line-height: 1.45;
-  white-space: pre-wrap;
   word-break: break-word;
+}
+
+.msg--client {
+  white-space: pre-wrap;
+}
+
+/* ═══ Markdown inside bot messages ═══ */
+.msg__markdown :deep(p) {
+  margin: 0 0 .4em;
+}
+
+.msg__markdown :deep(p:last-child) {
+  margin-bottom: 0;
+}
+
+.msg__markdown :deep(strong) {
+  color: var(--accent-gold);
+  font-weight: 600;
+}
+
+.msg__markdown :deep(ul),
+.msg__markdown :deep(ol) {
+  margin: .3em 0;
+  padding-left: 1.3em;
+}
+
+.msg__markdown :deep(li) {
+  margin-bottom: .2em;
+}
+
+.msg__markdown :deep(table) {
+  width: 100%;
+  border-collapse: collapse;
+  margin: .5em 0;
+  font-size: .82rem;
+}
+
+.msg__markdown :deep(th),
+.msg__markdown :deep(td) {
+  padding: .35em .55em;
+  border: 1px solid rgba(255, 255, 255, .12);
+  text-align: left;
+}
+
+.msg__markdown :deep(th) {
+  background: rgba(200, 169, 110, .15);
+  color: var(--accent-gold);
+  font-weight: 600;
+  font-size: .78rem;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+
+.msg__markdown :deep(td) {
+  background: rgba(255, 255, 255, .03);
+}
+
+.msg__markdown :deep(tr:hover td) {
+  background: rgba(255, 255, 255, .06);
+}
+
+.msg__markdown :deep(code) {
+  background: rgba(255, 255, 255, .08);
+  padding: .1em .35em;
+  border-radius: 4px;
+  font-size: .85em;
+}
+
+.msg__markdown :deep(a) {
+  color: var(--accent-gold);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.msg__markdown :deep(hr) {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, .1);
+  margin: .5em 0;
 }
 
 .msg--bot {
