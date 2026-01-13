@@ -328,9 +328,14 @@ function onKeydown(e) {
   flex: 1;
   overflow-y: auto;
   padding: .9rem;
-  display: grid;
-  align-content: end;
+  display: flex;
+  flex-direction: column;
   gap: .55rem;
+}
+
+.chat-window__messages::before {
+  content: '';
+  flex: 1 1 0;
 }
 
 .msg {
@@ -421,20 +426,20 @@ function onKeydown(e) {
 }
 
 .msg--bot {
-  justify-self: start;
+  align-self: flex-start;
   background: rgba(255, 255, 255, .07);
   border: 1px solid rgba(255, 255, 255, .09);
   color: #e7dfd7;
 }
 
 .msg--client {
-  justify-self: end;
+  align-self: flex-end;
   background: rgba(200, 169, 110, .28);
   border: 1px solid rgba(200, 169, 110, .5);
 }
 
 .msg--typing {
-  justify-self: start;
+  align-self: flex-start;
   display: inline-flex;
   gap: 5px;
   background: rgba(255, 255, 255, .07);
