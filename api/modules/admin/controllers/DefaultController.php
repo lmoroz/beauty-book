@@ -27,13 +27,15 @@ class DefaultController extends Controller
             $salon = Salon::find()->one();
             $settings = $salon !== null ? $salon->getSettingsArray() : [];
             $snapshotFile = Yii::getAlias('@app/runtime/snapshots/latest.sql');
+            clearstatcache(true, $snapshotFile);
+            $exists = file_exists($snapshotFile);
             $snapshotData = [
                 'autoResetEnabled' => !empty($settings['auto_reset_enabled']),
-                'snapshotExists' => file_exists($snapshotFile),
-                'snapshotDate' => file_exists($snapshotFile)
+                'snapshotExists' => $exists,
+                'snapshotDate' => $exists
                     ? date('Y-m-d H:i:s', filemtime($snapshotFile))
                     : null,
-                'snapshotSize' => file_exists($snapshotFile)
+                'snapshotSize' => $exists
                     ? round(filesize($snapshotFile) / 1024, 1)
                     : null,
             ];
@@ -66,12 +68,23 @@ class DefaultController extends Controller
             throw new ForbiddenHttpException();
         }
 
-        $cmd = PHP_BINARY . ' ' . escapeshellarg(Yii::getAlias('@app/yii')) . ' snapshot/create 2>&1';
+        $snapshotFile = Yii::getAlias('@app/runtime/snapshots/latest.sql');
+        $oldMtime = file_exists($snapshotFile) ? filemtime($snapshotFile) : 0;
+
+        $phpBin = PHP_BINARY;
+        if (strpos($phpBin, 'fpm') !== false) {
+            $cliBin = dirname($phpBin) . '/php';
+            $phpBin = file_exists($cliBin) ? $cliBin : 'php';
+        }
+        $envPrefix = 'YII_ENV=prod YII_DEBUG=0';
+        $cmd = $envPrefix . ' ' . $phpBin . ' ' . escapeshellarg(Yii::getAlias('@app/yii')) . ' snapshot/create 2>&1';
         $output = shell_exec($cmd);
 
-        $snapshotFile = Yii::getAlias('@app/runtime/snapshots/latest.sql');
-        if (file_exists($snapshotFile) && filesize($snapshotFile) > 0) {
-            Yii::$app->session->setFlash('success', 'Снэпшот создан: ' . date('Y-m-d H:i:s'));
+        clearstatcache(true, $snapshotFile);
+        $newMtime = file_exists($snapshotFile) ? filemtime($snapshotFile) : 0;
+
+        if ($newMtime > $oldMtime && filesize($snapshotFile) > 0) {
+            Yii::$app->session->setFlash('success', 'Снэпшот создан: ' . date('Y-m-d H:i:s', $newMtime));
         } else {
             Yii::$app->session->setFlash('error', 'Ошибка создания снэпшота: ' . ($output ?: 'unknown error'));
         }

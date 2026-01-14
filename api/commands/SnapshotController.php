@@ -63,11 +63,12 @@ class SnapshotController extends Controller
 
         $dir = $this->getSnapshotDir();
         if (!is_dir($dir)) {
-            if (!mkdir($dir, 0775, true)) {
+            if (!mkdir($dir, 0777, true)) {
                 $this->stderr("ERROR: Cannot create directory: {$dir}\n");
                 return ExitCode::UNSPECIFIED_ERROR;
             }
         }
+        @chmod($dir, 0777);
 
         $db = $this->getDbParams();
         $sqlPath = $this->getSqlPath();
@@ -105,6 +106,7 @@ class SnapshotController extends Controller
         }
 
         $size = round(filesize($sqlPath) / 1024, 1);
+        @chmod($sqlPath, 0666);
         $this->stdout("Database snapshot saved: {$sqlPath} ({$size} KB)\n");
 
         $uploadsPath = $this->getUploadsPath();
@@ -115,6 +117,7 @@ class SnapshotController extends Controller
                 $this->removeDirectory($uploadsBackup);
             }
             $this->copyDirectory($uploadsPath, $uploadsBackup);
+            $this->fixPermissions($uploadsBackup);
             $this->stdout("Uploads backed up to: {$uploadsBackup}\n");
         } else {
             $this->stdout("No uploads directory found, skipping uploads backup\n");
@@ -293,7 +296,7 @@ class SnapshotController extends Controller
 
     private function fixPermissions(string $dir): void
     {
-        chmod($dir, 0777);
+        @chmod($dir, 0777);
 
         $iterator = new \RecursiveIteratorIterator(
             new \RecursiveDirectoryIterator($dir, \RecursiveDirectoryIterator::SKIP_DOTS),
@@ -301,7 +304,7 @@ class SnapshotController extends Controller
         );
 
         foreach ($iterator as $item) {
-            chmod($item->getPathname(), $item->isDir() ? 0777 : 0666);
+            @chmod($item->getPathname(), $item->isDir() ? 0777 : 0666);
         }
     }
 }
