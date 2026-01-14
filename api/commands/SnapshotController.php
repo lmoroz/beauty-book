@@ -185,6 +185,7 @@ class SnapshotController extends Controller
                 $this->removeDirectory($uploadsPath);
             }
             $this->copyDirectory($uploadsBackup, $uploadsPath);
+            $this->fixPermissions($uploadsPath);
             $this->stdout("Uploads restored from backup\n");
         }
 
@@ -288,5 +289,19 @@ class SnapshotController extends Controller
         }
 
         rmdir($dir);
+    }
+
+    private function fixPermissions(string $dir): void
+    {
+        chmod($dir, 0777);
+
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($dir, \RecursiveDirectoryIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::SELF_FIRST
+        );
+
+        foreach ($iterator as $item) {
+            chmod($item->getPathname(), $item->isDir() ? 0777 : 0666);
+        }
     }
 }

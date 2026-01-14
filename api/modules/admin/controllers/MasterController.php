@@ -145,6 +145,10 @@ class MasterController extends Controller
         }
     }
 
+    private const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp'];
+    private const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+    private const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
+
     private function handlePhotoUpload(Master $model): void
     {
         $file = UploadedFile::getInstanceByName('photo_file');
@@ -153,13 +157,30 @@ class MasterController extends Controller
             return;
         }
 
+        $ext = strtolower($file->extension);
+        if (!in_array($ext, self::ALLOWED_EXTENSIONS, true)) {
+            Yii::$app->session->setFlash('error', 'Допустимые форматы фото: ' . implode(', ', self::ALLOWED_EXTENSIONS) . '.');
+            return;
+        }
+
+        $mime = mime_content_type($file->tempName);
+        if (!in_array($mime, self::ALLOWED_MIME_TYPES, true)) {
+            Yii::$app->session->setFlash('error', 'Файл не является изображением.');
+            return;
+        }
+
+        if ($file->size > self::MAX_FILE_SIZE) {
+            $maxMb = self::MAX_FILE_SIZE / 1024 / 1024;
+            Yii::$app->session->setFlash('error', "Максимальный размер фото — {$maxMb} МБ.");
+            return;
+        }
+
         $uploadDir = Yii::getAlias('@webroot/uploads/masters');
 
         if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0775, true);
+            mkdir($uploadDir, 0777, true);
         }
 
-        $ext = strtolower($file->extension);
         $filename = $model->slug ?: ('master_' . time());
         $filename = preg_replace('/[^a-z0-9_-]/', '', $filename);
         $saveName = $filename . '.' . $ext;

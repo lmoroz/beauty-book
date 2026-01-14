@@ -74,12 +74,12 @@ $selectedIds = $model->specialization_ids ?: [];
                     <small style="color: #999;"><?= Html::encode($model->photo) ?></small>
                 </div>
             <?php endif; ?>
-            <input id="f-photo" type="file" name="photo_file" accept="image/*"
+            <input id="f-photo" type="file" name="photo_file" accept=".jpg,.jpeg,.png,.webp"
                    style="padding: 6px 0;">
             <?php if (!$model->photo): ?>
-                <small style="color: #999;">JPG, PNG, WebP — до 5 МБ</small>
+                <small style="color: #999;">JPG, PNG, WebP — до 2 МБ</small>
             <?php else: ?>
-                <small style="color: #999;">Загрузите новое фото для замены</small>
+                <small style="color: #999;">Загрузите новое фото для замены (JPG, PNG, WebP — до 2 МБ)</small>
             <?php endif; ?>
         </div>
 
